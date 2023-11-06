@@ -58,6 +58,87 @@ int envoie_recois_message(int socketfd)
   return 0;
 }
 
+int envoie_nom_client(int socketfd)
+{
+int res ;
+  char data[1024];
+  // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
+
+  // Demandez à l'utilisateur d'entrer un message
+  char nom[1024];
+ res = gethostname(&nom[0],1024);
+  strcpy(data, "nom: ");
+  strcat(data, nom);
+
+  if (res < 0)
+  {
+    perror("erreur get host name");
+    exit(EXIT_FAILURE);
+  }
+
+  int write_status = write(socketfd, data, strlen(data));
+  if (write_status < 0)
+  {
+    perror("erreur ecriture");
+    exit(EXIT_FAILURE);
+  }
+
+  // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
+
+  // lire les données de la socket
+  int read_status = read(socketfd, data, sizeof(data));
+  if (read_status < 0)
+  {
+    perror("erreur lecture");
+    return -1;
+  }
+
+  printf("%s\n", data);
+
+  return 0;
+}
+
+
+int envoie_operateur_numero(int socketfd)
+{
+  char data[1024];
+  // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
+
+  // Demandez à l'utilisateur d'entrer un message
+  char calcul[1024];
+  printf("Entrez votre calcul sous la forme (operateur num1 num2) : ");
+fgets(calcul, sizeof(calcul), stdin);
+  strcpy(data, "calcule: ");
+  strcat(data, calcul);
+  //printf("res = %s ,  %s ",data, calcul);
+
+
+  int write_status = write(socketfd, data, strlen(data));
+  if (write_status < 0)
+  {
+    perror("erreur ecriture");
+    exit(EXIT_FAILURE);
+  }
+
+  // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
+
+  // lire les données de la socket
+  int read_status = read(socketfd, data, sizeof(data));
+  if (read_status < 0)
+  {
+    perror("erreur lecture");
+    return -1;
+  }
+
+  printf("%s\n", data);
+
+  return 0;
+}
+
 void analyse(char *pathname, char *data)
 {
   // compte de couleurs
@@ -112,11 +193,11 @@ int main(int argc, char **argv)
 
   struct sockaddr_in server_addr;
 
-  if (argc < 2)
+  /*if (argc < 2)
   {
     printf("usage: ./client chemin_bmp_image\n");
     return (EXIT_FAILURE);
-  }
+  }*/
 
   /*
    * Creation d'une socket
@@ -141,12 +222,23 @@ int main(int argc, char **argv)
     perror("connection serveur");
     exit(EXIT_FAILURE);
   }
-  if (argc != 2)
+  //a revoir les arg ne sont pas correctement compare 
+
+  if ((argc == 2) && strcmp( argv[1],"nom") == 0 ) 
+  {
+    envoie_nom_client(socketfd);
+  }
+  else if ((argc == 2) && strcmp( argv[1], "calcule" ) ==0) 
+  {
+    envoie_operateur_numero(socketfd);
+  }
+  else if ((argc == 2) && strcmp( argv[1], "message")==0 )
   {
     // envoyer et recevoir un message
     envoie_recois_message(socketfd);
+    
   }
-  else
+  else if ((argc == 2) && strstr(argv[1],".bmp") != NULL)
   {
     // envoyer et recevoir les couleurs prédominantes
     // d'une image au format BMP (argv[1])

@@ -44,6 +44,47 @@ double degreesToRadians(double degrees)
   return degrees * M_PI / 180.0;
 }
 
+double evalOp(char *expression) {
+    char *token = strtok(expression, " "); // get the string message
+    token = strtok(NULL, " "); // get the operand
+    char *operateur = token;
+
+    switch (operateur[0]) {
+        case '+':
+            {
+                float nb1 = atof(strtok(NULL, " "));
+                float nb2 = atof(strtok(NULL, " "));
+                return nb1 + nb2;
+            }
+        case '-':
+            {
+                float nb1 = atof(strtok(NULL, " "));
+                float nb2 = atof(strtok(NULL, " "));
+                return nb1 - nb2;
+            }
+        case '*':
+            {
+                float nb1 = atof(strtok(NULL, " "));
+                float nb2 = atof(strtok(NULL, " "));
+                return nb1 * nb2;
+            }
+        case '/':
+            {
+                float nb1 = atof(strtok(NULL, " "));
+                float nb2 = atof(strtok(NULL, " "));
+                if (nb2 != 0) {
+                    return (double)nb1 / nb2;
+                } else {
+                    printf("Division par 0\n");
+                    exit(1);
+                }
+            }
+        default:
+            printf("Expression non reconnue\n");
+            exit(1);
+    }
+}
+
 int plot(char *data)
 {
   int i;
@@ -133,17 +174,35 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
    * extraire le code des données envoyées par le client.
    * Les données envoyées par le client peuvent commencer par le mot "message :" ou un autre mot.
    */
-  printf("Message recu: %s\n", data);
+
   char code[10];
   sscanf(data, "%s", code);
+    
 
   // Si le message commence par le mot: 'message:'
   if (strcmp(code, "message:") == 0)
   {
+    printf("Message recu: %s\n", data);
     renvoie_message(client_socket_fd, data);
   }
-  else
+  if (strcmp(code, "calcule:") == 0)
   {
+    printf("Calcul recu: %s\n", data);
+  double result = evalOp(data);
+  printf("Resultat :  %f\n", result);
+    //printf("Resultat :  %f\n", evalOp(data));
+    char chaine[50];
+    snprintf(chaine,50, "%f", result);
+    renvoie_message(client_socket_fd, chaine);
+  }
+  if (strcmp(code, "nom:") == 0)
+  {
+    printf("%s\n", data);
+    renvoie_message(client_socket_fd, data);
+  }
+  if(strcmp(code, "couleur:") == 0)
+  {
+    printf("Image recu: %s\n", data);
     plot(data);
   }
 
