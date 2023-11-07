@@ -58,6 +58,87 @@ int envoie_recois_message(int socketfd)
   return 0;
 }
 
+void formaterMessage(const char *entree, char *sortie) {
+    const char *delim = ": ";
+    char *token, *copy;
+    char code[50];
+    char valeurs[100];
+
+    // Copiez l'entrée pour la modification
+    copy = strdup(entree);
+
+    // Utilisez strtok pour extraire le code
+    token = strtok(copy, delim);
+    if (token == NULL) {
+        strcpy(sortie, "Format invalide pour l'entrée.");
+        free(copy);
+        return;
+    }
+    strcpy(code, token);
+
+    // Utilisez strtok pour extraire les valeurs
+    token = strtok(NULL, delim);
+    if (token == NULL) {
+        strcpy(sortie, "Format invalide pour l'entrée.");
+        free(copy);
+        return;
+    }
+    strcpy(valeurs, token);
+
+    // Formate la sortie
+    snprintf(sortie, 200, "{\n\t\"code\" : \"%s\",\n\t\"valeurs\" : [ \"%s\" ]\n}", code, valeurs);
+
+    free(copy);
+}
+
+int envoie_json(int socketfd)
+{
+int res ;
+  char data[1024];
+  // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
+
+
+  char nom[1024];
+ res = gethostname(&nom[0],1024);
+  strcpy(data, "nom: ");
+  strcat(data, nom);
+
+char sortie[200];
+
+    formaterMessage(data, sortie);
+    printf("%s\n", sortie);
+
+  if (res < 0)
+  {
+    perror("erreur get host name");
+    exit(EXIT_FAILURE);
+  }
+
+  int write_status = write(socketfd, data, strlen(data));
+  if (write_status < 0)
+  {
+    perror("erreur ecriture");
+    exit(EXIT_FAILURE);
+  }
+
+  // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
+
+  // lire les données de la socket
+  int read_status = read(socketfd, data, sizeof(data));
+  if (read_status < 0)
+  {
+    perror("erreur lecture");
+    return -1;
+  }
+
+  printf("%s\n", data);
+
+  return 0;
+}
+
+
 int envoie_nom_client(int socketfd)
 {
 int res ;
@@ -328,6 +409,16 @@ int main(int argc, char **argv)
     // d'une image au format BMP (argv[1])
     envoie_couleurs(socketfd, argv[1]);
   }
+    else if ((argc == 2) && strcmp( argv[1], "liste")==0)
+  {
+    // envoyer et recevoir les couleurs prédominantes
+    // d'une image au format BMP (argv[1])
+    envoie_json(socketfd);
+    //envoie_couleurs(socketfd, argv[1]);
+  }
+else{
+  puts("commande non reconnue");
+}
 
   close(socketfd);
 }
