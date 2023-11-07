@@ -139,6 +139,44 @@ fgets(calcul, sizeof(calcul), stdin);
   return 0;
 }
 
+int envoie_list_couleurs(int socketfd)
+{
+  char data[1024];
+  // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
+
+  // Demandez à l'utilisateur d'entrer un message
+  char listC[1024];
+  printf("Entrez votre liste de couleurs sous la forme : (nbCouleur,couleur1,...) : ");
+fgets(listC, sizeof(listC), stdin);
+  strcpy(data, "couleur: ");
+  strcat(data, listC);
+  //printf("res = %s ,  %s ",data, calcul);
+
+
+  int write_status = write(socketfd, data, strlen(data));
+  if (write_status < 0)
+  {
+    perror("erreur ecriture");
+    exit(EXIT_FAILURE);
+  }
+
+  // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
+
+  // lire les données de la socket
+  int read_status = read(socketfd, data, sizeof(data));
+  if (read_status < 0)
+  {
+    perror("erreur lecture");
+    return -1;
+  }
+
+  printf("%s\n", data);
+
+  return 0;
+}
+
 void analyse(char *pathname, char *data)
 {
   // compte de couleurs
@@ -231,6 +269,10 @@ int main(int argc, char **argv)
   else if ((argc == 2) && strcmp( argv[1], "calcule" ) ==0) 
   {
     envoie_operateur_numero(socketfd);
+  }
+  else if ((argc == 2) && strcmp( argv[1], "couleurs" ) ==0) 
+  {
+    envoie_list_couleurs(socketfd);
   }
   else if ((argc == 2) && strcmp( argv[1], "message")==0 )
   {

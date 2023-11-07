@@ -44,6 +44,47 @@ double degreesToRadians(double degrees)
   return degrees * M_PI / 180.0;
 }
 
+void enregistrerCouleursDansFichier(const char *nomFichier, const char *listeCouleurs) {
+    int nbCouleurs;
+    const char *delim = ",";
+    char *token, *copy;
+
+    // Copiez la liste de couleurs pour la modification
+    copy = strdup(listeCouleurs);
+
+    // Vérifiez que la chaîne commence par un nombre et extraie le nombre de couleurs
+    if (sscanf(copy, "couleur: %d,", &nbCouleurs) != 1) {
+        printf("Format invalide pour la liste de couleurs.\n");
+        free(copy);
+        return;
+    }
+
+    FILE *fichier = fopen(nomFichier, "w");
+
+    if (fichier == NULL) {
+        perror("Impossible d'ouvrir le fichier");
+        free(copy);
+        return;
+    }
+
+    // Écrivez le nombre de couleurs enregistré dans le fichier
+    fprintf(fichier, "nbCouleur enregistre %d\n", nbCouleurs);
+
+    // Utilisez strtok pour extraire les couleurs et les écrire dans le fichier
+    token = strtok(copy, delim);
+    // Avancez pour ignorer le nombre
+    token = strtok(NULL, delim);
+    while (token != NULL && nbCouleurs > 0) {
+        fprintf(fichier, "%s\n", token);
+        token = strtok(NULL, delim);
+        nbCouleurs--;
+    }
+
+    fclose(fichier);
+    free(copy);
+}
+
+
 double evalOp(char *expression) {
     char *token = strtok(expression, " "); // get the string message
     token = strtok(NULL, " "); // get the operand
@@ -190,7 +231,6 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
     printf("Calcul recu: %s\n", data);
   double result = evalOp(data);
   printf("Resultat :  %f\n", result);
-    //printf("Resultat :  %f\n", evalOp(data));
     char chaine[50];
     snprintf(chaine,50, "%f", result);
     renvoie_message(client_socket_fd, chaine);
@@ -202,10 +242,15 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
   }
   if(strcmp(code, "couleur:") == 0)
   {
+    printf("Couleur recu: %s\n", data);
+    enregistrerCouleursDansFichier("couleur.txt",data);
+    renvoie_message(client_socket_fd, "Couleur Sauvegardé");
+  }
+  if(strcmp(code, "couleur:") == 0)
+  {
     printf("Image recu: %s\n", data);
     plot(data);
   }
-
   return (EXIT_SUCCESS);
 }
 
