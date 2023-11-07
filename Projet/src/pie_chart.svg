@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
   <rect width="100%" height="100%" fill="#ffffff" />
-  <path d="M200.00,50.00 A150.00,150.00 0 0,1 288.17,78.65 L200.00,200.00 Z" fill="#efffff" />
-  <path d="M288.17,78.65 A150.00,150.00 0 0,1 342.66,153.65 L200.00,200.00 Z" fill="#ergshe
-" />
 </svg>

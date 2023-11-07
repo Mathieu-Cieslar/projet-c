@@ -149,7 +149,7 @@ int envoie_list_couleurs(int socketfd)
   char listC[1024];
   printf("Entrez votre liste de couleurs sous la forme : (nbCouleur,couleur1,...) : ");
 fgets(listC, sizeof(listC), stdin);
-  strcpy(data, "couleur: ");
+  strcpy(data, "couleurs: ");
   strcat(data, listC);
 
 
@@ -250,6 +250,7 @@ int envoie_couleurs(int socketfd, char *pathname)
   char data[1024];
   memset(data, 0, sizeof(data));
   analyse(pathname, data);
+  printf(" data %s",data);
 
   int write_status = write(socketfd, data, strlen(data));
   if (write_status < 0)

@@ -53,7 +53,7 @@ void enregistrerCouleursDansFichier(const char *nomFichier, const char *listeCou
     copy = strdup(listeCouleurs);
 
     // Vérifiez que la chaîne commence par un nombre et extraie le nombre de couleurs
-    if (sscanf(copy, "couleur: %d,", &nbCouleurs) != 1) {
+    if (sscanf(copy, "couleurs: %d,", &nbCouleurs) != 1) {
         printf("Format invalide pour la liste de couleurs.\n");
         free(copy);
         return;
@@ -91,7 +91,7 @@ void enregistrerBalisesDansFichier(const char *nomFichier, const char *listeBali
 
     // Copiez la liste des balises pour la modification
     copy = strdup(listeBalises);
-    
+
     // Vérifiez que la chaîne commence par un nombre et extraie le nombre de couleurs
     if (sscanf(copy, "balises: %d,", &nbBalises) != 1) {
         printf("Format invalide pour la liste de balises.\n");
@@ -258,7 +258,6 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
 
   char code[10];
   sscanf(data, "%s", code);
-    
 
   // Si le message commence par le mot: 'message:'
   if (strcmp(code, "message:") == 0)
@@ -280,7 +279,7 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
     printf("%s\n", data);
     renvoie_message(client_socket_fd, data);
   }
-  if(strcmp(code, "couleur:") == 0)
+  if(strcmp(code, "couleurs:") == 0)
   {
     printf("Couleur recu: %s\n", data);
     enregistrerCouleursDansFichier("couleur.txt",data);
@@ -292,7 +291,7 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
     enregistrerBalisesDansFichier("balise.txt",data);
     renvoie_message(client_socket_fd, "Balise Sauvegardé");
   }
-  if(strcmp(code, "couleur:") == 0)
+  if(strcmp(code, "couleurs:") == 0)
   {
     printf("Image recu: %s\n", data);
     plot(data);
