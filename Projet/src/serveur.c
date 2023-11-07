@@ -84,6 +84,46 @@ void enregistrerCouleursDansFichier(const char *nomFichier, const char *listeCou
     free(copy);
 }
 
+void enregistrerBalisesDansFichier(const char *nomFichier, const char *listeBalises) {
+    int nbBalises;
+    const char *delim = ",";
+    char *token, *copy;
+
+    // Copiez la liste des balises pour la modification
+    copy = strdup(listeBalises);
+    
+    // Vérifiez que la chaîne commence par un nombre et extraie le nombre de couleurs
+    if (sscanf(copy, "balises: %d,", &nbBalises) != 1) {
+        printf("Format invalide pour la liste de balises.\n");
+        free(copy);
+        return;
+    }
+
+    FILE *fichier = fopen(nomFichier, "w");
+
+    if (fichier == NULL) {
+        perror("Impossible d'ouvrir le fichier");
+        free(copy);
+        return;
+    }
+
+    // Écrivez le nombre de balise enregistré dans le fichier
+    fprintf(fichier, "nbBalises enregistre %d\n", nbBalises);
+
+    // Utilisez strtok pour extraire les balises et les écrire dans le fichier
+    token = strtok(copy, delim);
+    // Avancez pour ignorer le nombre
+    token = strtok(NULL, delim);
+    while (token != NULL && nbBalises > 0) {
+        fprintf(fichier, "%s\n", token);
+        token = strtok(NULL, delim);
+        nbBalises--;
+    }
+
+    fclose(fichier);
+    free(copy);
+}
+
 
 double evalOp(char *expression) {
     char *token = strtok(expression, " "); // get the string message
@@ -245,6 +285,12 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
     printf("Couleur recu: %s\n", data);
     enregistrerCouleursDansFichier("couleur.txt",data);
     renvoie_message(client_socket_fd, "Couleur Sauvegardé");
+  }
+  if(strcmp(code, "balises:") == 0)
+  {
+    printf("Balises recu: %s\n", data);
+    enregistrerBalisesDansFichier("balise.txt",data);
+    renvoie_message(client_socket_fd, "Balise Sauvegardé");
   }
   if(strcmp(code, "couleur:") == 0)
   {

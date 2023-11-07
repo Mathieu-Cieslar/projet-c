@@ -151,7 +151,43 @@ int envoie_list_couleurs(int socketfd)
 fgets(listC, sizeof(listC), stdin);
   strcpy(data, "couleur: ");
   strcat(data, listC);
-  //printf("res = %s ,  %s ",data, calcul);
+
+
+  int write_status = write(socketfd, data, strlen(data));
+  if (write_status < 0)
+  {
+    perror("erreur ecriture");
+    exit(EXIT_FAILURE);
+  }
+
+  // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
+
+  // lire les données de la socket
+  int read_status = read(socketfd, data, sizeof(data));
+  if (read_status < 0)
+  {
+    perror("erreur lecture");
+    return -1;
+  }
+
+  printf("%s\n", data);
+
+  return 0;
+}
+
+int envoie_list_balises(int socketfd)
+{
+  char data[1024];
+  // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
+
+  // Demandez à l'utilisateur d'entrer un message
+  char listB[1024];
+  printf("Entrez votre liste de balises sous la forme : (nbBalise,balise1,...) : ");
+fgets(listB, sizeof(listB), stdin);
+  strcpy(data, "balises: ");
+  strcat(data, listB);
 
 
   int write_status = write(socketfd, data, strlen(data));
@@ -260,7 +296,6 @@ int main(int argc, char **argv)
     perror("connection serveur");
     exit(EXIT_FAILURE);
   }
-  //a revoir les arg ne sont pas correctement compare 
 
   if ((argc == 2) && strcmp( argv[1],"nom") == 0 ) 
   {
@@ -278,6 +313,12 @@ int main(int argc, char **argv)
   {
     // envoyer et recevoir un message
     envoie_recois_message(socketfd);
+    
+  }
+    else if ((argc == 2) && strcmp( argv[1], "balises")==0 )
+  {
+    // envoyer et recevoir un message
+    envoie_list_balises(socketfd);
     
   }
   else if ((argc == 2) && strstr(argv[1],".bmp") != NULL)
