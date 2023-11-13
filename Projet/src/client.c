@@ -91,18 +91,52 @@ void formaterMessage(const char *entree, char *sortie) {
     free(copy);
 }
 
-int envoie_json(int socketfd)
+int envoie_json(int socketfd, char* code)
 {
 int res ;
   char data[1024];
   // la réinitialisation de l'ensemble des données
   memset(data, 0, sizeof(data));
 
+if (strcmp(code, "message") == 0) {
+      char message[1024];
+    printf("Votre message (max 1000 caracteres): ");
+    fgets(message, sizeof(message), stdin);
+    strcpy(data, "message: ");
+    strcat(data, message);
+        
+    } else if (strcmp(code, "nom") == 0) {
+       char nom[1024];
+      res = gethostname(&nom[0],1024);
+      strcpy(data, "nom: ");
+      strcat(data, nom);
+    }else if (strcmp(code, "calcule") == 0) {
+        char calcul[1024];
+  printf("Entrez votre calcul sous la forme (operateur num1 num2) : ");
+fgets(calcul, sizeof(calcul), stdin);
+  strcpy(data, "calcule: ");
+  strcat(data, calcul);
+     
+    } else if (strcmp(code, "couleur") == 0) {
+       char listC[1024];
+  printf("Entrez votre liste de couleurs sous la forme : (nbCouleur,couleur1,...) : ");
+fgets(listC, sizeof(listC), stdin);
+  strcpy(data, "couleurs: ");
+  strcat(data, listC);
+      
+    }else if (strcmp(code, "balise") == 0) {
+  char listB[1024];
+  printf("Entrez votre liste de balises sous la forme : (nbBalise,balise1,...) : ");
+fgets(listB, sizeof(listB), stdin);
+  strcpy(data, "balises: ");
+  strcat(data, listB);
+    }
+     else {
+        printf("Choix non valide.\n");
+    }
 
-  char nom[1024];
- res = gethostname(&nom[0],1024);
-  strcpy(data, "nom: ");
-  strcat(data, nom);
+
+
 
 char sortie[200];
 
@@ -193,7 +227,6 @@ int envoie_operateur_numero(int socketfd)
 fgets(calcul, sizeof(calcul), stdin);
   strcpy(data, "calcule: ");
   strcat(data, calcul);
-  //printf("res = %s ,  %s ",data, calcul);
 
 
   int write_status = write(socketfd, data, strlen(data));
@@ -385,26 +418,50 @@ int main(int argc, char **argv)
 
   if ( strcmp( argv[1],"nom") == 0 ) 
   {
+    if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+  {
+    envoie_json(socketfd,argv[1]);
+  }else{
     envoie_nom_client(socketfd);
   }
+  }
   else if (strcmp( argv[1], "calcule" ) ==0) 
+  {  
+    if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
   {
+    envoie_json(socketfd,argv[1]);
+  }else{
     envoie_operateur_numero(socketfd);
+  }
   }
   else if ( strcmp( argv[1], "couleurs" ) ==0) 
   {
+      if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+  {
+    envoie_json(socketfd,argv[1]);
+  }else{
     envoie_list_couleurs(socketfd);
+  }
   }
   else if (strcmp( argv[1], "message")==0 )
   {
+      if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+  {
+    envoie_json(socketfd,argv[1]);
+  }else{
     // envoyer et recevoir un message
     envoie_recois_message(socketfd);
-    
+  }
   }
     else if ( strcmp( argv[1], "balises")==0 )
   {
+      if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+  {
+    envoie_json(socketfd,argv[1]);
+  }else{
     // envoyer et recevoir un message
     envoie_list_balises(socketfd);
+  }
     
   }
   else if ( strstr(argv[1],".bmp") != NULL)
@@ -417,7 +474,7 @@ int main(int argc, char **argv)
   {
     // envoyer et recevoir les couleurs prédominantes
     // d'une image au format BMP (argv[1])
-    envoie_json(socketfd);
+    envoie_json(socketfd,argv[1]);
     //envoie_couleurs(socketfd, argv[1]);
   }
 else{

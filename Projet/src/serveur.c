@@ -302,7 +302,23 @@ void traiterMessageJSON(int client_socket_fd,const char *jsonString) {
     printf("Valeurs:\n");
 
 
-    renvoie_message(client_socket_fd,valeurs);
+if (strcmp(code, "message") == 0) {
+      renvoie_message(client_socket_fd,valeurs);
+        
+    } else if (strcmp(code, "nom") == 0) {
+     renvoie_message(client_socket_fd,valeurs);
+    }else if (strcmp(code, "calcule") == 0) {
+     
+    } else if (strcmp(code, "couleur") == 0) {
+      
+    }else if (strcmp(code, "balise") == 0) {
+  
+    }
+     else {
+        printf("Choix non valide.\n");
+    }
+
+
 
     // Utilisation de strtok pour extraire chaque valeur du tableau
     char *valeur = strtok(valeurs, ",");
