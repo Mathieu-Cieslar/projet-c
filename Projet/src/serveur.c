@@ -168,50 +168,31 @@ double evalOp(char *expression) {
 
 
 void traiterMessageJSON(const char *jsonString) {
-    // Recherche de la position de la première occurrence du caractère '{'
-    const char *debut = strchr(jsonString, '{');
+    // Recherche de la position de la première occurrence du champ "code"
+    const char *codeDebut = strstr(jsonString, "\"code\"");
 
-    printf("data :  %s\n",jsonString);
-    
-    // Vérifie si le JSON commence bien avec un '{'
-    if (debut == NULL) {
-        fprintf(stderr, "Format JSON invalide.\n");
+    // Vérifie si le JSON contient le champ "code"
+    if (codeDebut == NULL) {
+        fprintf(stderr, "Le champ 'code' est introuvable dans le JSON.\n");
         return;
     }
 
-    // Avance le pointeur au début du JSON
-    debut++;
-
-    // Recherche de la position de la première occurrence du caractère '}'
-    const char *fin = strrchr(debut, '}');
-    
-    // Vérifie si le JSON se termine bien par un '}'
-    if (fin == NULL) {
-        fprintf(stderr, "Format JSON invalide.\n");
-        return;
-    }
-
-    // Calcul de la longueur du JSON
-    size_t longueurJSON = fin - debut;
-
-    // Alloue de la mémoire pour le JSON
-    char *jsonCopie = malloc(longueurJSON + 1);
-    if (jsonCopie == NULL) {
-        fprintf(stderr, "Erreur d'allocation mémoire.\n");
-        return;
-    }
-
-    // Copie le JSON dans une chaîne modifiable
-    strncpy(jsonCopie, debut, longueurJSON);
-    jsonCopie[longueurJSON] = '\0'; // Ajoute le caractère de fin de chaîne
-
-    // Recherche de la position de la première occurrence du caractère '"'
-    const char *codeDebut = strchr(jsonCopie, '"');
-    
-    // Vérifie si le JSON contient un '"'
+    // Avance le pointeur au début de la valeur associée au champ "code"
+    codeDebut = strchr(codeDebut, ':');
     if (codeDebut == NULL) {
         fprintf(stderr, "Format JSON invalide.\n");
-        free(jsonCopie);
+        return;
+    }
+    codeDebut++; // Avance après le caractère ':'
+
+    // Ignore les espaces potentiels après le caractère ':' et avant le début de la chaîne de caractères
+    while (*codeDebut == ' ' || *codeDebut == '\t' || *codeDebut == '\n' || *codeDebut == '\r') {
+        codeDebut++;
+    }
+
+    // Vérifie si la valeur associée au champ "code" commence par un guillemet
+    if (*codeDebut != '\"') {
+        fprintf(stderr, "Format JSON invalide pour la valeur associée au champ 'code'.\n");
         return;
     }
 
@@ -220,11 +201,10 @@ void traiterMessageJSON(const char *jsonString) {
 
     // Recherche de la position de la première occurrence du caractère '"'
     const char *codeFin = strchr(codeDebut, '"');
-    
+
     // Vérifie si le JSON contient un autre '"'
     if (codeFin == NULL) {
         fprintf(stderr, "Format JSON invalide.\n");
-        free(jsonCopie);
         return;
     }
 
@@ -235,7 +215,6 @@ void traiterMessageJSON(const char *jsonString) {
     char *code = malloc(longueurCode + 1);
     if (code == NULL) {
         fprintf(stderr, "Erreur d'allocation mémoire.\n");
-        free(jsonCopie);
         return;
     }
 
@@ -246,9 +225,80 @@ void traiterMessageJSON(const char *jsonString) {
     // Affiche le code
     printf("Code: %s\n", code);
 
+    // Recherche de la position de la première occurrence du champ "valeurs"
+    const char *valeursDebut = strstr(jsonString, "\"valeurs\"");
+
+    // Vérifie si le JSON contient le champ "valeurs"
+    if (valeursDebut == NULL) {
+        fprintf(stderr, "Le champ 'valeurs' est introuvable dans le JSON.\n");
+        free(code);
+        return;
+    }
+
+    // Avance le pointeur au début de la valeur associée au champ "valeurs"
+    valeursDebut = strchr(valeursDebut, ':');
+    if (valeursDebut == NULL) {
+        fprintf(stderr, "Format JSON invalide.\n");
+        free(code);
+        return;
+    }
+    valeursDebut++; // Avance après le caractère ':'
+
+    // Ignore les espaces potentiels après le caractère ':' et avant le début du tableau
+    while (*valeursDebut == ' ' || *valeursDebut == '\t' || *valeursDebut == '\n' || *valeursDebut == '\r') {
+        valeursDebut++;
+    }
+
+    // Vérifie si le tableau de valeurs commence bien avec un '['
+    if (*valeursDebut != '[') {
+        fprintf(stderr, "Format JSON invalide pour le tableau de valeurs.\n");
+        free(code);
+        return;
+    }
+
+    // Avance le pointeur au début du tableau
+    valeursDebut++;
+
+    // Recherche de la position de la première occurrence du caractère ']'
+    const char *valeursFin = strchr(valeursDebut, ']');
+
+    // Vérifie si le tableau de valeurs se termine bien par un ']'
+    if (valeursFin == NULL) {
+        fprintf(stderr, "Format JSON invalide pour le tableau de valeurs.\n");
+        free(code);
+        return;
+    }
+
+    // Calcul de la longueur du tableau de valeurs
+    size_t longueurValeurs = valeursFin - valeursDebut;
+
+    // Alloue de la mémoire pour le tableau de valeurs
+    char *valeurs = malloc(longueurValeurs + 1);
+    if (valeurs == NULL) {
+        fprintf(stderr, "Erreur d'allocation mémoire.\n");
+        free(code);
+        return;
+    }
+
+    // Copie le tableau de valeurs dans une chaîne modifiable
+    strncpy(valeurs, valeursDebut, longueurValeurs);
+    valeurs[longueurValeurs] = '\0'; // Ajoute le caractère de fin de chaîne
+
+    // Affiche chaque valeur individuelle du tableau
+    printf("Valeurs:\n");
+
+    // Utilisation de strtok pour extraire chaque valeur du tableau
+    char *valeur = strtok(valeurs, ",");
+    while (valeur != NULL) {
+        // Affiche chaque valeur individuelle
+        printf("  %s\n", valeur);
+        // Appel suivant pour obtenir la prochaine valeur
+        valeur = strtok(NULL, ",");
+    }
+
     // Libère la mémoire allouée
     free(code);
-    free(jsonCopie);
+    free(valeurs);
 }
 
 int plot(char *data)
@@ -382,7 +432,6 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
     plot(data);
   }if(strchr(code, '{') != NULL){
     traiterMessageJSON(data);
-    puts("traitement done");
   }
   else{
     printf("Messge inconnu: %s, data :  %s\n", code,data);
