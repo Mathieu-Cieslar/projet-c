@@ -126,7 +126,7 @@ void enregistrerCouleursDansFichier(const char *nomFichier, const char *listeCou
 
     // On utilise strtok pour extraire les couleurs et les écrire dans le fichier
     token = strtok(copy, delim);
-    // Avancez pour ignorer le nombre
+    // On avance pour ignorer le nombre
     token = strtok(NULL, delim);
     while (token != NULL && nbCouleurs > 0) {
         fprintf(fichier, "%s\n", token);
