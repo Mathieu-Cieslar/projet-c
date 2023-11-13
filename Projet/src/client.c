@@ -61,8 +61,9 @@ int envoie_recois_message(int socketfd)
 void formaterMessage(const char *entree, char *sortie) {
     const char *delim = ": ";
     char *token, *copy;
-    char code[50];
-    char valeurs[100];
+    char *code = NULL;
+    char *valeurs = NULL;
+    size_t valeurs_len = 0;
 
     // Copiez l'entrée pour la modification
     copy = strdup(entree);
@@ -70,31 +71,65 @@ void formaterMessage(const char *entree, char *sortie) {
     // Utilisez strtok pour extraire le code
     token = strtok(copy, delim);
     if (token == NULL) {
-        strcpy(sortie, "Format invalide pour l'entrée.");
+        snprintf(sortie, 200, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
         free(copy);
         return;
     }
-    strcpy(code, token);
+    code = strdup(token);
 
     // Utilisez strtok pour extraire les valeurs
     token = strtok(NULL, delim);
     if (token == NULL) {
-        strcpy(sortie, "Format invalide pour l'entrée.");
+        snprintf(sortie, 200, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
         free(copy);
+        free(code);
         return;
     }
-    strcpy(valeurs, token);
+
+    // Ajoutez la première valeur (opérateur ou chiffre)
+    valeurs = realloc(valeurs, valeurs_len + strlen(token) + 3);
+    if (valeurs == NULL) {
+        fprintf(stderr, "Erreur d'allocation mémoire.\n");
+        exit(EXIT_FAILURE);
+    }
+    strcat(valeurs, "\"");
+    strcat(valeurs, token);
+    strcat(valeurs, "\"");
+    valeurs_len += strlen(token) + 2;
+
+    // Vérifiez s'il y a d'autres valeurs séparées par des espaces
+    while ((token = strtok(NULL, " ")) != NULL) {
+        // Ignorez les virgules
+        if (strcmp(token, ",") == 0) {
+            continue;
+        }
+
+        // Allouez de l'espace pour la nouvelle valeur et la virgule
+        valeurs = realloc(valeurs, valeurs_len + strlen(token) + 5);
+        if (valeurs == NULL) {
+            fprintf(stderr, "Erreur d'allocation mémoire.\n");
+            exit(EXIT_FAILURE);
+        }
+        strcat(valeurs, ", \"");
+        strcat(valeurs, token);
+        strcat(valeurs, "\"");
+        valeurs_len += strlen(token) + 4;
+    }
 
     // Formate la sortie
-    snprintf(sortie, 200, "{\n\t\"code\" : \"%s\",\n\t\"valeurs\" : [ \"%s\" ]\n}", code, valeurs);
+    snprintf(sortie, 200, "{\n\t\"code\" : \"%s\",\n\t\"valeurs\" : [ %s ]\n}", code, valeurs);
 
+    // Libère la mémoire allouée
     free(copy);
+    free(code);
+    free(valeurs);
 }
 
 int envoie_json(int socketfd, char* code)
 {
 int res ;
   char data[1024];
+  char dataToFormat[1024];
   // la réinitialisation de l'ensemble des données
   memset(data, 0, sizeof(data));
 
@@ -102,8 +137,10 @@ if (strcmp(code, "message") == 0) {
       char message[1024];
     printf("Votre message (max 1000 caracteres): ");
     fgets(message, sizeof(message), stdin);
-    strcpy(data, "message: ");
-    strcat(data, message);
+    strncpy(dataToFormat,message,strlen(message)-1);
+    strcpy(dataToFormat, "message: ");
+    strcat(dataToFormat, message);
+        strncpy(data,dataToFormat,strlen(dataToFormat)-1);
         
     } else if (strcmp(code, "nom") == 0) {
        char nom[1024];
@@ -114,8 +151,9 @@ if (strcmp(code, "message") == 0) {
         char calcul[1024];
   printf("Entrez votre calcul sous la forme (operateur num1 num2) : ");
 fgets(calcul, sizeof(calcul), stdin);
-  strcpy(data, "calcule: ");
-  strcat(data, calcul);
+  strcpy(dataToFormat, "calcule: ");
+  strcat(dataToFormat, calcul);
+  strncpy(data,dataToFormat,strlen(dataToFormat)-1);
      
     } else if (strcmp(code, "couleur") == 0) {
        char listC[1024];

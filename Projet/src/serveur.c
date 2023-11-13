@@ -139,11 +139,28 @@ void enregistrerBalisesDansFichier(const char *nomFichier, const char *listeBali
 }
 
 
+void formatStringForJson(char *chaine) {
+    // Initialiser un index pour la nouvelle chaîne
+    int nouvelIndex = 0;
+
+    // Parcourir chaque caractère de la chaîne
+    for (int i = 0; i < strlen(chaine); i++) {
+        // Ignorer les espaces, guillemets et virgules
+        if (chaine[i] != '"' && chaine[i] != ',') {
+            // Ajouter le caractère à la nouvelle chaîne
+            chaine[nouvelIndex++] = chaine[i];
+        }
+    }
+
+    // Ajouter le caractère nul à la fin de la nouvelle chaîne
+    chaine[nouvelIndex] = '\0';
+}
+
 double evalOp(char *expression) {
     char *token = strtok(expression, " "); // get the string message
     token = strtok(NULL, " "); // get the operand
     char *operateur = token;
-
+    printf(" op1 %d ",operateur[0]);
     switch (operateur[0]) {
         case '+':
             {
@@ -308,6 +325,13 @@ if (strcmp(code, "message") == 0) {
     } else if (strcmp(code, "nom") == 0) {
      renvoie_message(client_socket_fd,valeurs);
     }else if (strcmp(code, "calcule") == 0) {
+      formatStringForJson(valeurs);
+      printf("%s",valeurs);
+        double result = evalOp(valeurs);
+  printf("Resultat :  %f\n", result);
+    char chaine[50];
+    snprintf(chaine,50, "%f", result);
+    renvoie_message(client_socket_fd, chaine);
      
     } else if (strcmp(code, "couleur") == 0) {
       
@@ -427,6 +451,7 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
   if (strcmp(code, "calcule:") == 0)
   {
     printf("Calcul recu: %s\n", data);
+    printf("%s",data);
   double result = evalOp(data);
   printf("Resultat :  %f\n", result);
     char chaine[50];
@@ -455,6 +480,7 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
     printf("Image recu: %s\n", data);
     plot(data);
   }if(strchr(code, '{') != NULL){
+    printf("%s \n",data);
     traiterMessageJSON(client_socket_fd,data);
   }
   else{
