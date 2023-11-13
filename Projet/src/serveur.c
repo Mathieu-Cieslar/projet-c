@@ -161,7 +161,6 @@ void formatStringForJson(char *chaine) {
 
 double evalOp(char *expression) {
 
-    printf("%s", expression);
     // Utiliser strtok pour extraire le code, dans le cas d'un passage de données sans JSON
     char *codeToken = strtok(expression, ": ");
     char *operateur;
@@ -179,9 +178,6 @@ double evalOp(char *expression) {
         printf("Expression invalide\n");
         exit(1);
     }
-
-
-    printf(" op1 %s ", operateur);
 
     switch (operateur[0]) {
         case '+': {
@@ -271,9 +267,6 @@ void traiterMessageJSON(int client_socket_fd,const char *jsonString) {
     strncpy(code, codeDebut, longueurCode);
     code[longueurCode] = '\0'; // Ajoute le caractère de fin de chaîne
 
-    // Affiche le code
-    printf("Code: %s\n", code);
-
     // Recherche de la position de la première occurrence du champ "valeurs"
     const char *valeursDebut = strstr(jsonString, "\"valeurs\"");
 
@@ -333,10 +326,6 @@ void traiterMessageJSON(int client_socket_fd,const char *jsonString) {
     strncpy(valeurs, valeursDebut, longueurValeurs);
     valeurs[longueurValeurs] = '\0'; // Ajoute le caractère de fin de chaîne
 
-    // Affiche chaque valeur individuelle du tableau
-    printf("Valeurs:\n");
-
-
 if (strcmp(code, "message") == 0) {
       renvoie_message(client_socket_fd,valeurs);
         
@@ -344,7 +333,6 @@ if (strcmp(code, "message") == 0) {
      renvoie_message(client_socket_fd,valeurs);
     }else if (strcmp(code, "calcule") == 0) {
       formatStringForJson(valeurs);
-      printf("%s",valeurs);
         double result = evalOp(valeurs);
   printf("Resultat :  %f\n", result);
     char chaine[50];
@@ -359,19 +347,6 @@ if (strcmp(code, "message") == 0) {
      else {
         printf("Choix non valide.\n");
     }
-
-
-
-    // Utilisation de strtok pour extraire chaque valeur du tableau
-    char *valeur = strtok(valeurs, ",");
-    while (valeur != NULL) {
-        // Affiche chaque valeur individuelle
-        printf("  %s\n", valeur);
-        // Appel suivant pour obtenir la prochaine valeur
-        valeur = strtok(NULL, ",");
-    }
-
-
     // Libère la mémoire allouée
     free(code);
     free(valeurs);
