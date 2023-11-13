@@ -39,6 +39,44 @@ int visualize_plot()
   return 0;
 }
 
+void formatStringForJson(char *chaine) {
+    // Initialiser un index pour la nouvelle chaîne
+    int nouvelIndex = 0;
+
+
+    // Parcourir chaque caractère de la chaîne
+    for (int i = 0; i < strlen(chaine); i++) {
+        // Ignorer les espaces, guillemets et virgules
+        if (chaine[i] != '"' && chaine[i] != ',') {
+            // Ajouter le caractère à la nouvelle chaîne
+            chaine[nouvelIndex++] = chaine[i];
+        }
+    }
+
+    // Ajouter le caractère nul à la fin de la nouvelle chaîne
+    chaine[nouvelIndex] = '\0';
+
+  
+}
+
+void formatJsonForList(char *chaine) {
+    // Initialiser un index pour la nouvelle chaîne
+    int nouvelIndex = 0;
+
+
+    // Parcourir chaque caractère de la chaîne
+    for (int i = 0; i < strlen(chaine); i++) {
+        // Ignorer les espaces, guillemets et virgules
+        if (chaine[i] != '"' && chaine[i] != ' ') {
+            // Ajouter le caractère à la nouvelle chaîne
+            chaine[nouvelIndex++] = chaine[i];
+        }
+    }
+
+    // Ajouter le caractère nul à la fin de la nouvelle chaîne
+    chaine[nouvelIndex] = '\0';
+}
+
 /* renvoyer un message (*data) au client (client_socket_fd)
  */
 int renvoie_message(int client_socket_fd, char *data)
@@ -66,11 +104,11 @@ void enregistrerCouleursDansFichier(const char *nomFichier, const char *listeCou
     // Copiez la liste de couleurs pour la modification
     copy = strdup(listeCouleurs);
 
+    formatJsonForList(copy);
+
     // Vérifiez que la chaîne commence par un nombre et extraie le nombre de couleurs
     if (sscanf(copy, "couleurs: %d,", &nbCouleurs) != 1) {
-        printf("Format invalide pour la liste de couleurs.\n");
-        free(copy);
-        return;
+        sscanf(copy, " %d,", &nbCouleurs);
     }
 
     FILE *fichier = fopen(nomFichier, "w");
@@ -106,11 +144,12 @@ void enregistrerBalisesDansFichier(const char *nomFichier, const char *listeBali
     // Copiez la liste des balises pour la modification
     copy = strdup(listeBalises);
 
+    // on format la list si elle provient du json
+    formatJsonForList(copy);
+
     // Vérifiez que la chaîne commence par un nombre et extraie le nombre de couleurs
     if (sscanf(copy, "balises: %d,", &nbBalises) != 1) {
-        printf("Format invalide pour la liste de balises.\n");
-        free(copy);
-        return;
+        sscanf(copy, " %d,", &nbBalises);
     }
 
     FILE *fichier = fopen(nomFichier, "w");
@@ -139,25 +178,7 @@ void enregistrerBalisesDansFichier(const char *nomFichier, const char *listeBali
 }
 
 
-void formatStringForJson(char *chaine) {
-    // Initialiser un index pour la nouvelle chaîne
-    int nouvelIndex = 0;
 
-
-    // Parcourir chaque caractère de la chaîne
-    for (int i = 0; i < strlen(chaine); i++) {
-        // Ignorer les espaces, guillemets et virgules
-        if (chaine[i] != '"' && chaine[i] != ',') {
-            // Ajouter le caractère à la nouvelle chaîne
-            chaine[nouvelIndex++] = chaine[i];
-        }
-    }
-
-    // Ajouter le caractère nul à la fin de la nouvelle chaîne
-    chaine[nouvelIndex] = '\0';
-
-  
-}
 
 double evalOp(char *expression) {
 
@@ -339,10 +360,13 @@ if (strcmp(code, "message") == 0) {
     snprintf(chaine,50, "%f", result);
     renvoie_message(client_socket_fd, chaine);
      
-    } else if (strcmp(code, "couleur") == 0) {
+    } else if (strcmp(code, "couleurs") == 0) {
+          enregistrerCouleursDansFichier("couleur.txt",valeurs);
+    renvoie_message(client_socket_fd, "Couleur Sauvegardé");
       
-    }else if (strcmp(code, "balise") == 0) {
-  
+    }else if (strcmp(code, "balises") == 0) {
+  enregistrerBalisesDansFichier("balise.txt",valeurs);
+    renvoie_message(client_socket_fd, "Balise Sauvegardé");
     }
      else {
         printf("Choix non valide.\n");

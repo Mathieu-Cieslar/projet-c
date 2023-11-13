@@ -59,7 +59,7 @@ int envoie_recois_message(int socketfd)
 }
 
 void formaterMessage(const char *entree, char *sortie) {
-    const char *delim = ": ";
+    const char *delims = ":, ";
     char *token, *copy;
     char *code = NULL;
     char *valeurs = NULL;
@@ -69,7 +69,7 @@ void formaterMessage(const char *entree, char *sortie) {
     copy = strdup(entree);
 
     // Utilisez strtok pour extraire le code
-    token = strtok(copy, delim);
+    token = strtok(copy, delims);
     if (token == NULL) {
         snprintf(sortie, 200, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
         free(copy);
@@ -78,7 +78,7 @@ void formaterMessage(const char *entree, char *sortie) {
     code = strdup(token);
 
     // Utilisez strtok pour extraire les valeurs
-    token = strtok(NULL, delim);
+    token = strtok(NULL, delims);
     if (token == NULL) {
         snprintf(sortie, 200, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
         free(copy);
@@ -97,13 +97,8 @@ void formaterMessage(const char *entree, char *sortie) {
     strcat(valeurs, "\"");
     valeurs_len += strlen(token) + 2;
 
-    // Vérifiez s'il y a d'autres valeurs séparées par des espaces
-    while ((token = strtok(NULL, " ")) != NULL) {
-        // Ignorez les virgules
-        if (strcmp(token, ",") == 0) {
-            continue;
-        }
-
+    // Vérifiez s'il y a d'autres valeurs séparées par des virgules ou des espaces
+    while ((token = strtok(NULL, delims)) != NULL) {
         // Allouez de l'espace pour la nouvelle valeur et la virgule
         valeurs = realloc(valeurs, valeurs_len + strlen(token) + 5);
         if (valeurs == NULL) {
@@ -155,19 +150,21 @@ fgets(calcul, sizeof(calcul), stdin);
   strcat(dataToFormat, calcul);
   strncpy(data,dataToFormat,strlen(dataToFormat)-1);
      
-    } else if (strcmp(code, "couleur") == 0) {
+    } else if (strcmp(code, "couleurs") == 0) {
        char listC[1024];
   printf("Entrez votre liste de couleurs sous la forme : (nbCouleur,couleur1,...) : ");
 fgets(listC, sizeof(listC), stdin);
-  strcpy(data, "couleurs: ");
-  strcat(data, listC);
+  strcpy(dataToFormat, "couleurs: ");
+  strcat(dataToFormat, listC);
+  strncpy(data,dataToFormat,strlen(dataToFormat)-1);
       
-    }else if (strcmp(code, "balise") == 0) {
+    }else if (strcmp(code, "balises") == 0) {
   char listB[1024];
   printf("Entrez votre liste de balises sous la forme : (nbBalise,balise1,...) : ");
 fgets(listB, sizeof(listB), stdin);
-  strcpy(data, "balises: ");
-  strcat(data, listB);
+  strcpy(dataToFormat, "balises: ");
+  strcat(dataToFormat, listB);
+  strncpy(data,dataToFormat,strlen(dataToFormat)-1);
     }
      else {
         printf("Choix non valide.\n");

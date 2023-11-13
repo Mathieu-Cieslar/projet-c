@@ -1,11 +1,3 @@
-nbCouleur enregistre 10
-#030a02
-#060d05
-#040b03
-#050c04
-#040500
-#040902
-#020200
-#030301
-#020901
-#050a03
+nbCouleur enregistre 2
+eee
+eee
