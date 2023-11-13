@@ -143,6 +143,7 @@ void formatStringForJson(char *chaine) {
     // Initialiser un index pour la nouvelle chaîne
     int nouvelIndex = 0;
 
+
     // Parcourir chaque caractère de la chaîne
     for (int i = 0; i < strlen(chaine); i++) {
         // Ignorer les espaces, guillemets et virgules
@@ -154,45 +155,62 @@ void formatStringForJson(char *chaine) {
 
     // Ajouter le caractère nul à la fin de la nouvelle chaîne
     chaine[nouvelIndex] = '\0';
+
+  
 }
 
 double evalOp(char *expression) {
-    char *token = strtok(expression, " "); // get the string message
-    token = strtok(NULL, " "); // get the operand
-    char *operateur = token;
-    printf(" op1 %d ",operateur[0]);
+
+    printf("%s", expression);
+    // Utiliser strtok pour extraire le code, dans le cas d'un passage de données sans JSON
+    char *codeToken = strtok(expression, ": ");
+    char *operateur;
+
+    //Si calcule est trouvé on passe au suivant
+    if (strcmp(codeToken ,"calcule") == 0) {
+       operateur = strtok(NULL, " ");
+    } else {
+        // Si le message calcule n'est pas trouvé, l'opérateur est au début de la chaîne
+         operateur = codeToken;
+     }
+
+    // Si operateur est NULL à ce stade, il n'y a pas d'opérateur valide
+    if (operateur == NULL) {
+        printf("Expression invalide\n");
+        exit(1);
+    }
+
+
+    printf(" op1 %s ", operateur);
+
     switch (operateur[0]) {
-        case '+':
-            {
-                float nb1 = atof(strtok(NULL, " "));
-                float nb2 = atof(strtok(NULL, " "));
-                return nb1 + nb2;
+        case '+': {
+            float nb1 = atof(strtok(NULL, " "));
+            float nb2 = atof(strtok(NULL, " "));
+            return nb1 + nb2;
+        }
+        case '-': {
+            float nb1 = atof(strtok(NULL, " "));
+            float nb2 = atof(strtok(NULL, " "));
+            return nb1 - nb2;
+        }
+        case '*': {
+            float nb1 = atof(strtok(NULL, " "));
+            float nb2 = atof(strtok(NULL, " "));
+            return nb1 * nb2;
+        }
+        case '/': {
+            float nb1 = atof(strtok(NULL, " "));
+            float nb2 = atof(strtok(NULL, " "));
+            if (nb2 != 0) {
+                return (double)nb1 / nb2;
+            } else {
+                printf("Division par 0\n");
+                exit(1);
             }
-        case '-':
-            {
-                float nb1 = atof(strtok(NULL, " "));
-                float nb2 = atof(strtok(NULL, " "));
-                return nb1 - nb2;
-            }
-        case '*':
-            {
-                float nb1 = atof(strtok(NULL, " "));
-                float nb2 = atof(strtok(NULL, " "));
-                return nb1 * nb2;
-            }
-        case '/':
-            {
-                float nb1 = atof(strtok(NULL, " "));
-                float nb2 = atof(strtok(NULL, " "));
-                if (nb2 != 0) {
-                    return (double)nb1 / nb2;
-                } else {
-                    printf("Division par 0\n");
-                    exit(1);
-                }
-            }
+        }
         default:
-            printf("Expression non reconnue\n");
+            printf("Opérateur non reconnu\n");
             exit(1);
     }
 }
