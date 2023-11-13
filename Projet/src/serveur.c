@@ -166,6 +166,91 @@ double evalOp(char *expression) {
     }
 }
 
+
+void traiterMessageJSON(const char *jsonString) {
+    // Recherche de la position de la première occurrence du caractère '{'
+    const char *debut = strchr(jsonString, '{');
+
+    printf("data :  %s\n",jsonString);
+    
+    // Vérifie si le JSON commence bien avec un '{'
+    if (debut == NULL) {
+        fprintf(stderr, "Format JSON invalide.\n");
+        return;
+    }
+
+    // Avance le pointeur au début du JSON
+    debut++;
+
+    // Recherche de la position de la première occurrence du caractère '}'
+    const char *fin = strrchr(debut, '}');
+    
+    // Vérifie si le JSON se termine bien par un '}'
+    if (fin == NULL) {
+        fprintf(stderr, "Format JSON invalide.\n");
+        return;
+    }
+
+    // Calcul de la longueur du JSON
+    size_t longueurJSON = fin - debut;
+
+    // Alloue de la mémoire pour le JSON
+    char *jsonCopie = malloc(longueurJSON + 1);
+    if (jsonCopie == NULL) {
+        fprintf(stderr, "Erreur d'allocation mémoire.\n");
+        return;
+    }
+
+    // Copie le JSON dans une chaîne modifiable
+    strncpy(jsonCopie, debut, longueurJSON);
+    jsonCopie[longueurJSON] = '\0'; // Ajoute le caractère de fin de chaîne
+
+    // Recherche de la position de la première occurrence du caractère '"'
+    const char *codeDebut = strchr(jsonCopie, '"');
+    
+    // Vérifie si le JSON contient un '"'
+    if (codeDebut == NULL) {
+        fprintf(stderr, "Format JSON invalide.\n");
+        free(jsonCopie);
+        return;
+    }
+
+    // Avance le pointeur au début du code
+    codeDebut++;
+
+    // Recherche de la position de la première occurrence du caractère '"'
+    const char *codeFin = strchr(codeDebut, '"');
+    
+    // Vérifie si le JSON contient un autre '"'
+    if (codeFin == NULL) {
+        fprintf(stderr, "Format JSON invalide.\n");
+        free(jsonCopie);
+        return;
+    }
+
+    // Calcul de la longueur du code
+    size_t longueurCode = codeFin - codeDebut;
+
+    // Alloue de la mémoire pour le code
+    char *code = malloc(longueurCode + 1);
+    if (code == NULL) {
+        fprintf(stderr, "Erreur d'allocation mémoire.\n");
+        free(jsonCopie);
+        return;
+    }
+
+    // Copie le code dans une chaîne modifiable
+    strncpy(code, codeDebut, longueurCode);
+    code[longueurCode] = '\0'; // Ajoute le caractère de fin de chaîne
+
+    // Affiche le code
+    printf("Code: %s\n", code);
+
+    // Libère la mémoire allouée
+    free(code);
+    free(jsonCopie);
+}
+
 int plot(char *data)
 {
   int i;
@@ -295,6 +380,12 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
   {
     printf("Image recu: %s\n", data);
     plot(data);
+  }if(strchr(code, '{') != NULL){
+    traiterMessageJSON(data);
+    puts("traitement done");
+  }
+  else{
+    printf("Messge inconnu: %s, data :  %s\n", code,data);
   }
   return (EXIT_SUCCESS);
 }

@@ -115,7 +115,7 @@ char sortie[200];
     exit(EXIT_FAILURE);
   }
 
-  int write_status = write(socketfd, data, strlen(data));
+  int write_status = write(socketfd, sortie, strlen(sortie));
   if (write_status < 0)
   {
     perror("erreur ecriture");
