@@ -361,6 +361,7 @@ if (strcmp(code, "message") == 0) {
     renvoie_message(client_socket_fd, chaine);
      
     } else if (strcmp(code, "couleurs") == 0) {
+
           enregistrerCouleursDansFichier("couleur.txt",valeurs);
     renvoie_message(client_socket_fd, "Couleur Sauvegardé");
       

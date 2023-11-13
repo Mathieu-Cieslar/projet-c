@@ -179,7 +179,7 @@ char sortie[200];
 
   if (res < 0)
   {
-    perror("erreur get host name");
+    perror("erreur ");
     exit(EXIT_FAILURE);
   }
 
