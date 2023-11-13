@@ -39,6 +39,20 @@ int visualize_plot()
   return 0;
 }
 
+/* renvoyer un message (*data) au client (client_socket_fd)
+ */
+int renvoie_message(int client_socket_fd, char *data)
+{
+  int data_size = write(client_socket_fd, (void *)data, strlen(data));
+
+  if (data_size < 0)
+  {
+    perror("erreur ecriture");
+    return (EXIT_FAILURE);
+  }
+  return (EXIT_SUCCESS);
+}
+
 double degreesToRadians(double degrees)
 {
   return degrees * M_PI / 180.0;
@@ -167,7 +181,7 @@ double evalOp(char *expression) {
 }
 
 
-void traiterMessageJSON(const char *jsonString) {
+void traiterMessageJSON(int client_socket_fd,const char *jsonString) {
     // Recherche de la position de la première occurrence du champ "code"
     const char *codeDebut = strstr(jsonString, "\"code\"");
 
@@ -287,6 +301,9 @@ void traiterMessageJSON(const char *jsonString) {
     // Affiche chaque valeur individuelle du tableau
     printf("Valeurs:\n");
 
+
+    renvoie_message(client_socket_fd,valeurs);
+
     // Utilisation de strtok pour extraire chaque valeur du tableau
     char *valeur = strtok(valeurs, ",");
     while (valeur != NULL) {
@@ -296,9 +313,12 @@ void traiterMessageJSON(const char *jsonString) {
         valeur = strtok(NULL, ",");
     }
 
+
     // Libère la mémoire allouée
     free(code);
     free(valeurs);
+
+
 }
 
 int plot(char *data)
@@ -366,19 +386,7 @@ int plot(char *data)
   return 0;
 }
 
-/* renvoyer un message (*data) au client (client_socket_fd)
- */
-int renvoie_message(int client_socket_fd, char *data)
-{
-  int data_size = write(client_socket_fd, (void *)data, strlen(data));
 
-  if (data_size < 0)
-  {
-    perror("erreur ecriture");
-    return (EXIT_FAILURE);
-  }
-  return (EXIT_SUCCESS);
-}
 
 /* accepter la nouvelle connection d'un client et lire les données
  * envoyées par le client. En suite, le serveur envoie un message
@@ -431,7 +439,7 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
     printf("Image recu: %s\n", data);
     plot(data);
   }if(strchr(code, '{') != NULL){
-    traiterMessageJSON(data);
+    traiterMessageJSON(client_socket_fd,data);
   }
   else{
     printf("Messge inconnu: %s, data :  %s\n", code,data);

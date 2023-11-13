@@ -107,7 +107,6 @@ int res ;
 char sortie[200];
 
     formaterMessage(data, sortie);
-    printf("%s\n", sortie);
 
   if (res < 0)
   {
@@ -379,37 +378,42 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  if ((argc == 2) && strcmp( argv[1],"nom") == 0 ) 
+  if (argc < 2 ) 
+  {
+    puts("Ereur dans la commande le client necessite 1 arguments et eventuellement un deuxieme argument pour l envoi en json \n");
+  }
+
+  if ( strcmp( argv[1],"nom") == 0 ) 
   {
     envoie_nom_client(socketfd);
   }
-  else if ((argc == 2) && strcmp( argv[1], "calcule" ) ==0) 
+  else if (strcmp( argv[1], "calcule" ) ==0) 
   {
     envoie_operateur_numero(socketfd);
   }
-  else if ((argc == 2) && strcmp( argv[1], "couleurs" ) ==0) 
+  else if ( strcmp( argv[1], "couleurs" ) ==0) 
   {
     envoie_list_couleurs(socketfd);
   }
-  else if ((argc == 2) && strcmp( argv[1], "message")==0 )
+  else if (strcmp( argv[1], "message")==0 )
   {
     // envoyer et recevoir un message
     envoie_recois_message(socketfd);
     
   }
-    else if ((argc == 2) && strcmp( argv[1], "balises")==0 )
+    else if ( strcmp( argv[1], "balises")==0 )
   {
     // envoyer et recevoir un message
     envoie_list_balises(socketfd);
     
   }
-  else if ((argc == 2) && strstr(argv[1],".bmp") != NULL)
+  else if ( strstr(argv[1],".bmp") != NULL)
   {
     // envoyer et recevoir les couleurs prédominantes
     // d'une image au format BMP (argv[1])
     envoie_couleurs(socketfd, argv[1]);
   }
-    else if ((argc == 2) && strcmp( argv[1], "liste")==0)
+    else if (strcmp( argv[1], "liste")==0)
   {
     // envoyer et recevoir les couleurs prédominantes
     // d'une image au format BMP (argv[1])
