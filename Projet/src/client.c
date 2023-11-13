@@ -361,22 +361,31 @@ fgets(listB, sizeof(listB), stdin);
   return 0;
 }
 
-void analyse(char *pathname, char *data)
+void analyse(char *pathname, char *data, char* nbCouleur)
 {
   // compte de couleurs
   couleur_compteur *cc = analyse_bmp_image(pathname);
 
   int count;
-  strcpy(data, "couleurs: ");
+    strcpy(data, "couleurs: ");
   char temp_string[10] = "10,";
+  if (strcmp(nbCouleur,"") == 0)
+  {
   if (cc->size < 10)
   {
     sprintf(temp_string, "%d,", cc->size);
   }
-  strcat(data, temp_string);
+ 
+  }else{
+    char virgule[] = ",";
+    strcpy(temp_string,nbCouleur);
+     // Ajouter une virgule à la fin de la chaîne
+    strcat(temp_string, virgule);
+  }
+   strcat(data, temp_string);
 
   // choisir 10 couleurs
-  for (count = 1; count < 11 && cc->size - count > 0; count++)
+  for (count = 1; count < atoi(nbCouleur)+1 && cc->size - count > 0; count++)
   {
     if (cc->compte_bit == BITS32)
     {
@@ -393,11 +402,11 @@ void analyse(char *pathname, char *data)
   data[strlen(data) - 1] = '\0';
 }
 
-int envoie_couleurs(int socketfd, char *pathname)
+int envoie_couleurs(int socketfd, char *pathname, char* nbCouleur)
 {
   char data[1024];
   memset(data, 0, sizeof(data));
-  analyse(pathname, data);
+  analyse(pathname, data, nbCouleur);
   printf(" data %s",data);
 
   int write_status = write(socketfd, data, strlen(data));
@@ -415,12 +424,6 @@ int main(int argc, char **argv)
   int socketfd;
 
   struct sockaddr_in server_addr;
-
-  /*if (argc < 2)
-  {
-    printf("usage: ./client chemin_bmp_image\n");
-    return (EXIT_FAILURE);
-  }*/
 
   /*
    * Creation d'une socket
@@ -501,16 +504,18 @@ int main(int argc, char **argv)
   }
   else if ( strstr(argv[1],".bmp") != NULL)
   {
+    if (argc == 3)
+    {
+          // envoyer et recevoir les couleurs prédominantes
+    // d'une image au format BMP (argv[1])
+    envoie_couleurs(socketfd, argv[1],argv[2]);
+    }else{
     // envoyer et recevoir les couleurs prédominantes
     // d'une image au format BMP (argv[1])
-    envoie_couleurs(socketfd, argv[1]);
-  }
-    else if (strcmp( argv[1], "liste")==0)
-  {
-    // envoyer et recevoir les couleurs prédominantes
-    // d'une image au format BMP (argv[1])
-    envoie_json(socketfd,argv[1]);
-    //envoie_couleurs(socketfd, argv[1]);
+    envoie_couleurs(socketfd, argv[1],"");
+    }
+    
+
   }
 else{
   puts("commande non reconnue");
