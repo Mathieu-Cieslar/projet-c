@@ -39,32 +39,33 @@ int visualize_plot()
   return 0;
 }
 
+// fonction pour formater un json simple avec une seul valeur
 void formatStringForJson(char *chaine) {
-    // Initialiser un index pour la nouvelle chaîne
+    // On initialise un index pour la nouvelle chaîne
     int nouvelIndex = 0;
 
 
-    // Parcourir chaque caractère de la chaîne
+    // On parcour chaque caractère de la chaîne
     for (int i = 0; i < strlen(chaine); i++) {
         // Ignorer les espaces, guillemets et virgules
         if (chaine[i] != '"' && chaine[i] != ',') {
-            // Ajouter le caractère à la nouvelle chaîne
+            // On ajoute le caractère à la nouvelle chaîne
             chaine[nouvelIndex++] = chaine[i];
         }
     }
 
-    // Ajouter le caractère nul à la fin de la nouvelle chaîne
+    // On ajoute le caractère nul à la fin de la nouvelle chaîne
     chaine[nouvelIndex] = '\0';
 
   
 }
-
+// fonction pour formater un json contenant une liste
 void formatJsonForList(char *chaine) {
-    // Initialiser un index pour la nouvelle chaîne
+    // On initialise un index pour la nouvelle chaîne
     int nouvelIndex = 0;
 
 
-    // Parcourir chaque caractère de la chaîne
+    // On parcour chaque caractère de la chaîne
     for (int i = 0; i < strlen(chaine); i++) {
         // Ignorer les espaces, guillemets et virgules
         if (chaine[i] != '"' && chaine[i] != ' ') {
@@ -73,7 +74,7 @@ void formatJsonForList(char *chaine) {
         }
     }
 
-    // Ajouter le caractère nul à la fin de la nouvelle chaîne
+    // On ajoute le caractère nul à la fin de la nouvelle chaîne
     chaine[nouvelIndex] = '\0';
 }
 
@@ -96,17 +97,18 @@ double degreesToRadians(double degrees)
   return degrees * M_PI / 180.0;
 }
 
+//fonction pour enregistrer la liste des couleurs dans un fichiers
 void enregistrerCouleursDansFichier(const char *nomFichier, const char *listeCouleurs) {
     int nbCouleurs;
     const char *delim = ",";
     char *token, *copy;
 
-    // Copiez la liste de couleurs pour la modification
+    // COn copie la liste de couleurs pour la modification
     copy = strdup(listeCouleurs);
 
     formatJsonForList(copy);
 
-    // Vérifiez que la chaîne commence par un nombre et extraie le nombre de couleurs
+    // VOn verifie que la chaîne commence par un nombre et extraie le nombre de couleurs
     if (sscanf(copy, "couleurs: %d,", &nbCouleurs) != 1) {
         sscanf(copy, " %d,", &nbCouleurs);
     }
@@ -119,10 +121,10 @@ void enregistrerCouleursDansFichier(const char *nomFichier, const char *listeCou
         return;
     }
 
-    // Écrivez le nombre de couleurs enregistré dans le fichier
+    // On ecrit le nombre de couleurs enregistré dans le fichier
     fprintf(fichier, "nbCouleur enregistre %d\n", nbCouleurs);
 
-    // Utilisez strtok pour extraire les couleurs et les écrire dans le fichier
+    // On utilise strtok pour extraire les couleurs et les écrire dans le fichier
     token = strtok(copy, delim);
     // Avancez pour ignorer le nombre
     token = strtok(NULL, delim);
@@ -136,18 +138,19 @@ void enregistrerCouleursDansFichier(const char *nomFichier, const char *listeCou
     free(copy);
 }
 
+//fonction qui permet d enregistrer une liste de balise dans un fichier 
 void enregistrerBalisesDansFichier(const char *nomFichier, const char *listeBalises) {
     int nbBalises;
     const char *delim = ",";
     char *token, *copy;
 
-    // Copiez la liste des balises pour la modification
+    // On copie la liste des balises pour la modification
     copy = strdup(listeBalises);
 
-    // on format la list si elle provient du json
+    // on formate la list si elle provient du json
     formatJsonForList(copy);
 
-    // Vérifiez que la chaîne commence par un nombre et extraie le nombre de couleurs
+    // VOn verifie que la chaîne commence par un nombre et extraie le nombre de couleurs
     if (sscanf(copy, "balises: %d,", &nbBalises) != 1) {
         sscanf(copy, " %d,", &nbBalises);
     }
@@ -160,12 +163,12 @@ void enregistrerBalisesDansFichier(const char *nomFichier, const char *listeBali
         return;
     }
 
-    // Écrivez le nombre de balise enregistré dans le fichier
+    // On ecrit le nombre de balise enregistré dans le fichier
     fprintf(fichier, "nbBalises enregistre %d\n", nbBalises);
 
-    // Utilisez strtok pour extraire les balises et les écrire dans le fichier
+    // On utilise strtok pour extraire les balises et les écrire dans le fichier
     token = strtok(copy, delim);
-    // Avancez pour ignorer le nombre
+    // On avance pour ignorer le nombre
     token = strtok(NULL, delim);
     while (token != NULL && nbBalises > 0) {
         fprintf(fichier, "%s\n", token);
@@ -179,18 +182,18 @@ void enregistrerBalisesDansFichier(const char *nomFichier, const char *listeBali
 
 
 
-
+//fonction pour effectuer une opertaion en fonction du signe et de 2 nombres 
 double evalOp(char *expression) {
 
-    // Utiliser strtok pour extraire le code, dans le cas d'un passage de données sans JSON
+    // On utilise strtok pour extraire le code, dans le cas d'un passage de données sans JSON
     char *codeToken = strtok(expression, ": ");
     char *operateur;
 
-    //Si calcule est trouvé on passe au suivant
+    //Si calcule est trouvé on passe au suivant (dans le cas d un message sans json)
     if (strcmp(codeToken ,"calcule") == 0) {
        operateur = strtok(NULL, " ");
     } else {
-        // Si le message calcule n'est pas trouvé, l'opérateur est au début de la chaîne
+        // Si le message calcule n'est pas trouvé, l'opérateur est au début de la chaîne (cas message json)
          operateur = codeToken;
      }
 
@@ -233,6 +236,7 @@ double evalOp(char *expression) {
 }
 
 
+//Fonction pour receptionner un message json et effectuer le bon traitement en fonction du code
 void traiterMessageJSON(int client_socket_fd,const char *jsonString) {
     // Recherche de la position de la première occurrence du champ "code"
     const char *codeDebut = strstr(jsonString, "\"code\"");
@@ -348,23 +352,28 @@ void traiterMessageJSON(int client_socket_fd,const char *jsonString) {
     valeurs[longueurValeurs] = '\0'; // Ajoute le caractère de fin de chaîne
 
 if (strcmp(code, "message") == 0) {
+  //On renvoie le message apres lu le json
       renvoie_message(client_socket_fd,valeurs);
         
+        //On renvoie le nom apres avoir decoder le json
     } else if (strcmp(code, "nom") == 0) {
      renvoie_message(client_socket_fd,valeurs);
+
     }else if (strcmp(code, "calcule") == 0) {
+      // on format les valeur recu pour pouvoir les traiter
       formatStringForJson(valeurs);
-        double result = evalOp(valeurs);
-  printf("Resultat :  %f\n", result);
-    char chaine[50];
-    snprintf(chaine,50, "%f", result);
-    renvoie_message(client_socket_fd, chaine);
+      // On effecture l operation et on renvoir le resutats
+      double result = evalOp(valeurs);
+      printf("Resultat :  %f\n", result);
+      char chaine[50];
+      snprintf(chaine,50, "%f", result);
+      renvoie_message(client_socket_fd, chaine);
      
     } else if (strcmp(code, "couleurs") == 0) {
-
+        //On traite la liste de couleurs sous le format json
           enregistrerCouleursDansFichier("couleur.txt",valeurs);
     renvoie_message(client_socket_fd, "Couleur Sauvegardé");
-      
+      // on traite les balise sous format json
     }else if (strcmp(code, "balises") == 0) {
   enregistrerBalisesDansFichier("balise.txt",valeurs);
     renvoie_message(client_socket_fd, "Balise Sauvegardé");
@@ -457,52 +466,57 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
    * Les données envoyées par le client peuvent commencer par le mot "message :" ou un autre mot.
    */
 
+//On extrait le code qui sert a categoriser l'operation
   char code[10];
   sscanf(data, "%s", code);
 
-  // Si le message commence par le mot: 'message:'
+  // On regarde si on recoit le code message 
   if (strcmp(code, "message:") == 0)
-  {
+  { // On affiche le message
     printf("Message recu: %s\n", data);
+    //On renvoie le message au client
     renvoie_message(client_socket_fd, data);
   }
+  // on regarde si on recoit un calcul
   if (strcmp(code, "calcule:") == 0)
-  {
+  { 
     printf("Calcul recu: %s\n", data);
     printf("%s",data);
+    //on calcule le resultat
   double result = evalOp(data);
   printf("Resultat :  %f\n", result);
     char chaine[50];
+    //on affiche le resultat du calcul
     snprintf(chaine,50, "%f", result);
+    // on retourne le resultat au client
     renvoie_message(client_socket_fd, chaine);
-  }
+  } // on regarde si on recoit le code nom
   if (strcmp(code, "nom:") == 0)
   {
     printf("%s\n", data);
     renvoie_message(client_socket_fd, data);
-  }
+  }// on regarde si on recoit le code couleurs
   if(strcmp(code, "couleurs:") == 0)
   {
     printf("Couleur recu: %s\n", data);
     enregistrerCouleursDansFichier("couleur.txt",data);
     renvoie_message(client_socket_fd, "Couleur Sauvegardé");
-  }
+  }// On regarde si on recoit le code balise
   if(strcmp(code, "balises:") == 0)
   {
     printf("Balises recu: %s\n", data);
     enregistrerBalisesDansFichier("balise.txt",data);
     renvoie_message(client_socket_fd, "Balise Sauvegardé");
   }
+  //On regarde si le code est couleurs pour afficher l image
   if(strcmp(code, "couleurs:") == 0)
   {
     printf("Image recu: %s\n", data);
     plot(data);
-  }if(strchr(code, '{') != NULL){
+  }// On regarde si on recoit du json et on fait le traitement adequat
+  if(strchr(code, '{') != NULL){
     printf("%s \n",data);
     traiterMessageJSON(client_socket_fd,data);
-  }
-  else{
-    printf("Messge inconnu: %s, data :  %s\n", code,data);
   }
   return (EXIT_SUCCESS);
 }

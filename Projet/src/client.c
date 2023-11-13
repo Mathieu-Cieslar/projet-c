@@ -58,6 +58,7 @@ int envoie_recois_message(int socketfd)
   return 0;
 }
 
+//fonction qui permet de formater une chaine en message json
 void formaterMessage(const char *entree, char *sortie) {
     const char *delims = ":, ";
     char *token, *copy;
@@ -65,10 +66,10 @@ void formaterMessage(const char *entree, char *sortie) {
     char *valeurs = NULL;
     size_t valeurs_len = 0;
 
-    // Copiez l'entrée pour la modification
+    // On copie l'entrée pour la modification
     copy = strdup(entree);
 
-    // Utilisez strtok pour extraire le code
+    // On utilise strtok pour extraire le code
     token = strtok(copy, delims);
     if (token == NULL) {
         snprintf(sortie, 200, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
@@ -77,7 +78,7 @@ void formaterMessage(const char *entree, char *sortie) {
     }
     code = strdup(token);
 
-    // Utilisez strtok pour extraire les valeurs
+    // On utilise strtok pour extraire les valeurs
     token = strtok(NULL, delims);
     if (token == NULL) {
         snprintf(sortie, 200, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
@@ -86,7 +87,7 @@ void formaterMessage(const char *entree, char *sortie) {
         return;
     }
 
-    // Ajoutez la première valeur (opérateur ou chiffre)
+    // On ajoute la première valeur (opérateur ou chiffre)
     valeurs = realloc(valeurs, valeurs_len + strlen(token) + 3);
     if (valeurs == NULL) {
         fprintf(stderr, "Erreur d'allocation mémoire.\n");
@@ -97,9 +98,9 @@ void formaterMessage(const char *entree, char *sortie) {
     strcat(valeurs, "\"");
     valeurs_len += strlen(token) + 2;
 
-    // Vérifiez s'il y a d'autres valeurs séparées par des virgules ou des espaces
+    // On verifie s'il y a d'autres valeurs séparées par des virgules ou des espaces
     while ((token = strtok(NULL, delims)) != NULL) {
-        // Allouez de l'espace pour la nouvelle valeur et la virgule
+        // On alloue de l'espace pour la nouvelle valeur et la virgule
         valeurs = realloc(valeurs, valeurs_len + strlen(token) + 5);
         if (valeurs == NULL) {
             fprintf(stderr, "Erreur d'allocation mémoire.\n");
@@ -114,12 +115,13 @@ void formaterMessage(const char *entree, char *sortie) {
     // Formate la sortie
     snprintf(sortie, 200, "{\n\t\"code\" : \"%s\",\n\t\"valeurs\" : [ %s ]\n}", code, valeurs);
 
-    // Libère la mémoire allouée
+    // On libère la mémoire allouée
     free(copy);
     free(code);
     free(valeurs);
 }
 
+//fonction qui permet d envoyer le message au format json au serveur
 int envoie_json(int socketfd, char* code)
 {
 int res ;
@@ -129,6 +131,7 @@ int res ;
   memset(data, 0, sizeof(data));
 
 if (strcmp(code, "message") == 0) {
+  // on format le message utilisateur au format json
       char message[1024];
     printf("Votre message (max 1000 caracteres): ");
     fgets(message, sizeof(message), stdin);
@@ -138,19 +141,22 @@ if (strcmp(code, "message") == 0) {
         strncpy(data,dataToFormat,strlen(dataToFormat)-1);
         
     } else if (strcmp(code, "nom") == 0) {
+      //On format le nom utilisateur au format json
        char nom[1024];
       res = gethostname(&nom[0],1024);
       strcpy(data, "nom: ");
       strcat(data, nom);
     }else if (strcmp(code, "calcule") == 0) {
+// On saisit le calcul au format json
         char calcul[1024];
   printf("Entrez votre calcul sous la forme (operateur num1 num2) : ");
-fgets(calcul, sizeof(calcul), stdin);
+  fgets(calcul, sizeof(calcul), stdin);
   strcpy(dataToFormat, "calcule: ");
   strcat(dataToFormat, calcul);
   strncpy(data,dataToFormat,strlen(dataToFormat)-1);
      
     } else if (strcmp(code, "couleurs") == 0) {
+      //on saisie la liste des couleurs au format json
        char listC[1024];
   printf("Entrez votre liste de couleurs sous la forme : (nbCouleur,couleur1,...) : ");
 fgets(listC, sizeof(listC), stdin);
@@ -159,6 +165,7 @@ fgets(listC, sizeof(listC), stdin);
   strncpy(data,dataToFormat,strlen(dataToFormat)-1);
       
     }else if (strcmp(code, "balises") == 0) {
+      //on saisie la liste des balise au format json
   char listB[1024];
   printf("Entrez votre liste de balises sous la forme : (nbBalise,balise1,...) : ");
 fgets(listB, sizeof(listB), stdin);
@@ -169,12 +176,8 @@ fgets(listB, sizeof(listB), stdin);
      else {
         printf("Choix non valide.\n");
     }
-
-
-
-
 char sortie[200];
-
+// on formate la sortie au format json
     formaterMessage(data, sortie);
 
   if (res < 0)
@@ -206,7 +209,7 @@ char sortie[200];
   return 0;
 }
 
-
+//fonction pour envoyer le nom du client au serveur
 int envoie_nom_client(int socketfd)
 {
 int res ;
@@ -214,7 +217,7 @@ int res ;
   // la réinitialisation de l'ensemble des données
   memset(data, 0, sizeof(data));
 
-  // Demandez à l'utilisateur d'entrer un message
+  // On demande à l'utilisateur d'entrer un message
   char nom[1024];
  res = gethostname(&nom[0],1024);
   strcpy(data, "nom: ");
@@ -249,14 +252,14 @@ int res ;
   return 0;
 }
 
-
+//fonction pour envoyer une operation au serveur
 int envoie_operateur_numero(int socketfd)
 {
   char data[1024];
   // la réinitialisation de l'ensemble des données
   memset(data, 0, sizeof(data));
 
-  // Demandez à l'utilisateur d'entrer un message
+  // On demande à l'utilisateur d'entrer un message
   char calcul[1024];
   printf("Entrez votre calcul sous la forme (operateur num1 num2) : ");
 fgets(calcul, sizeof(calcul), stdin);
@@ -287,13 +290,14 @@ fgets(calcul, sizeof(calcul), stdin);
   return 0;
 }
 
+//fonction pour envoyer la liste des couleurs
 int envoie_list_couleurs(int socketfd)
 {
   char data[1024];
   // la réinitialisation de l'ensemble des données
   memset(data, 0, sizeof(data));
 
-  // Demandez à l'utilisateur d'entrer un message
+  // Demandez à l'utilisateur d'entrer la liste des couleurs
   char listC[1024];
   printf("Entrez votre liste de couleurs sous la forme : (nbCouleur,couleur1,...) : ");
 fgets(listC, sizeof(listC), stdin);
@@ -324,13 +328,14 @@ fgets(listC, sizeof(listC), stdin);
   return 0;
 }
 
+//fonction pour envoyer la liste des balise
 int envoie_list_balises(int socketfd)
 {
   char data[1024];
   // la réinitialisation de l'ensemble des données
   memset(data, 0, sizeof(data));
 
-  // Demandez à l'utilisateur d'entrer un message
+  // On demande à l'utilisateur d'entrer une liste de balise
   char listB[1024];
   printf("Entrez votre liste de balises sous la forme : (nbBalise,balise1,...) : ");
 fgets(listB, sizeof(listB), stdin);
@@ -345,7 +350,7 @@ fgets(listB, sizeof(listB), stdin);
     exit(EXIT_FAILURE);
   }
 
-  // la réinitialisation de l'ensemble des données
+  // on réinitialise l'ensemble des données
   memset(data, 0, sizeof(data));
 
   // lire les données de la socket
@@ -449,13 +454,16 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
+//si la commande ne coomporte pas au moins 2 arguments on affiche une erreur
   if (argc < 2 ) 
   {
     puts("Ereur dans la commande le client necessite 1 arguments et eventuellement un deuxieme argument pour l envoi en json \n");
   }
 
+//on regarde si la commande demande le nom
   if ( strcmp( argv[1],"nom") == 0 ) 
   {
+    //on regarde si le parametre json a ete active
     if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
   {
     envoie_json(socketfd,argv[1]);
@@ -514,8 +522,7 @@ int main(int argc, char **argv)
     // d'une image au format BMP (argv[1])
     envoie_couleurs(socketfd, argv[1],"");
     }
-    
-
+  
   }
 else{
   puts("commande non reconnue");

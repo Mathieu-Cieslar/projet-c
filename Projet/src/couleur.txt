@@ -1,6 +1,3 @@
-nbCouleur enregistre 5
-#030a02
-#060d05
-#040b03
-#050c04
-#040500
+nbCouleur enregistre 2
+#effff0
+#eggegz
