@@ -103,12 +103,12 @@ void enregistrerCouleursDansFichier(const char *nomFichier, const char *listeCou
     const char *delim = ",";
     char *token, *copy;
 
-    // COn copie la liste de couleurs pour la modification
+    // On copie la liste de couleurs pour la modification
     copy = strdup(listeCouleurs);
 
     formatJsonForList(copy);
 
-    // VOn verifie que la chaîne commence par un nombre et extraie le nombre de couleurs
+    // On verifie que la chaîne commence par un nombre et extraie le nombre de couleurs
     if (sscanf(copy, "couleurs: %d,", &nbCouleurs) != 1) {
         sscanf(copy, " %d,", &nbCouleurs);
     }
