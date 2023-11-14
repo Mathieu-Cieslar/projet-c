@@ -14,7 +14,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <signal.h>
 #include "json.h"
+
 
 //fonction qui permet de formater une chaine en message json
 void formaterMessage(const char *entree, char *sortie) {
@@ -78,3 +80,137 @@ void formaterMessage(const char *entree, char *sortie) {
     free(code);
     free(valeurs);
 }
+
+// fonction pour formater un json simple avec une seul valeur
+void formatStringForJson(char *chaine) {
+    // On initialise un index pour la nouvelle chaîne
+    int nouvelIndex = 0;
+
+
+    // On parcour chaque caractère de la chaîne
+    for (int i = 0; i < strlen(chaine); i++) {
+        // Ignorer les espaces, guillemets et virgules
+        if (chaine[i] != '"' && chaine[i] != ',') {
+            // On ajoute le caractère à la nouvelle chaîne
+            chaine[nouvelIndex++] = chaine[i];
+        }
+    }
+
+    // On ajoute le caractère nul à la fin de la nouvelle chaîne
+    chaine[nouvelIndex] = '\0';
+}
+
+// fonction pour formater un json contenant une liste
+void formatJsonForList(char *chaine) {
+    // On initialise un index pour la nouvelle chaîne
+    int nouvelIndex = 0;
+
+
+    // On parcour chaque caractère de la chaîne
+    for (int i = 0; i < strlen(chaine); i++) {
+        // Ignorer les espaces, guillemets et virgules
+        if (chaine[i] != '"' && chaine[i] != ' ') {
+            // Ajouter le caractère à la nouvelle chaîne
+            chaine[nouvelIndex++] = chaine[i];
+        }
+    }
+
+    // On ajoute le caractère nul à la fin de la nouvelle chaîne
+    chaine[nouvelIndex] = '\0';
+}
+
+// Fonction qui retourne un tableau de deux chaînes de caractères
+TableauDeChaines extraireCodeEtValeurs(const char* jsonString) {
+    TableauDeChaines result;
+
+    result.code = NULL;
+    result.valeurs = NULL;
+
+    const char* codeDebut = strstr(jsonString, "\"code\"");
+    if (codeDebut == NULL) {
+        fprintf(stderr, "Le champ 'code' est introuvable dans le JSON.\n");
+        return result;  // Pas besoin de libérer la mémoire, car elle n'a pas été allouée
+    }
+
+    codeDebut = strchr(codeDebut, ':');
+    if (codeDebut == NULL) {
+        fprintf(stderr, "Format JSON invalide.\n");
+        return result;
+    }
+    codeDebut++;
+
+    while (*codeDebut == ' ' || *codeDebut == '\t' || *codeDebut == '\n' || *codeDebut == '\r') {
+        codeDebut++;
+    }
+
+    if (*codeDebut != '\"') {
+        fprintf(stderr, "Format JSON invalide pour la valeur associée au champ 'code'.\n");
+        return result;
+    }
+
+    codeDebut++;
+
+    const char* codeFin = strchr(codeDebut, '"');
+    if (codeFin == NULL) {
+        fprintf(stderr, "Format JSON invalide.\n");
+        return result;
+    }
+
+    size_t longueurCode = codeFin - codeDebut;
+    result.code = malloc(longueurCode + 1);
+    if (result.code == NULL) {
+        fprintf(stderr, "Erreur d'allocation mémoire.\n");
+        return result;
+    }
+
+    strncpy(result.code, codeDebut, longueurCode);
+    result.code[longueurCode] = '\0';
+
+    const char* valeursDebut = strstr(jsonString, "\"valeurs\"");
+    if (valeursDebut == NULL) {
+        fprintf(stderr, "Le champ 'valeurs' est introuvable dans le JSON.\n");
+        free(result.code);
+        return result;
+    }
+
+    valeursDebut = strchr(valeursDebut, ':');
+    if (valeursDebut == NULL) {
+        fprintf(stderr, "Format JSON invalide.\n");
+        free(result.code);
+        return result;
+    }
+    valeursDebut++;
+
+    while (*valeursDebut == ' ' || *valeursDebut == '\t' || *valeursDebut == '\n' || *valeursDebut == '\r') {
+        valeursDebut++;
+    }
+
+    if (*valeursDebut != '[') {
+        fprintf(stderr, "Format JSON invalide pour le tableau de valeurs.\n");
+        free(result.code);
+        return result;
+    }
+
+    valeursDebut++;
+
+    const char* valeursFin = strchr(valeursDebut, ']');
+    if (valeursFin == NULL) {
+        fprintf(stderr, "Format JSON invalide pour le tableau de valeurs.\n");
+        free(result.code);
+        return result;
+    }
+
+    size_t longueurValeurs = valeursFin - valeursDebut;
+    result.valeurs = malloc(longueurValeurs + 1);
+    if (result.valeurs == NULL) {
+        fprintf(stderr, "Erreur d'allocation mémoire.\n");
+        free(result.code);
+        return result;
+    }
+
+    strncpy(result.valeurs, valeursDebut, longueurValeurs);
+    result.valeurs[longueurValeurs] = '\0';
+
+    return result;
+}
+
