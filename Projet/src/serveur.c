@@ -203,13 +203,30 @@ void traiterMessageJSON(int client_socket_fd,const char *jsonString) {
 
 TableauDeChaines result = extraireCodeEtValeurs(jsonString);
 
+char sortie[200];
+char data[1024];
+ char dataToFormat[1024];
+   // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
+
+strcpy(dataToFormat, result.code);
+strcat(dataToFormat, ": ");
+formatStringForJson(result.valeurs);
+strcat(dataToFormat, result.valeurs);
+strcat(dataToFormat, "\0");
+strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+
+// on formate la sortie au format json
+    formaterMessage(data, sortie);
+    
+
 if (strcmp(result.code, "message") == 0) {
   //On renvoie le message apres lu le json
       renvoie_message(client_socket_fd,result.valeurs);
         
         //On renvoie le nom apres avoir decoder le json
     } else if (strcmp(result.code, "nom") == 0) {
-     renvoie_message(client_socket_fd,result.valeurs);
+     renvoie_message(client_socket_fd,sortie);
 
     }else if (strcmp(result.code, "calcule") == 0) {
       // on format les valeur recu pour pouvoir les traiter
