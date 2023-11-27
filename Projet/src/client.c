@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <regex.h>
 
 #include "client.h"
 #include "bmp.h"

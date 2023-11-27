@@ -517,7 +517,6 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
   }// On regarde si on recoit du json et on fait le traitement adequat
   if(strchr(code, '{') != NULL){
     printf("%s \n",data);
-    validationJSON(data);
     traiterMessageJSON(client_socket_fd,data);
   }
   return (EXIT_SUCCESS);
