@@ -1,4 +1,3 @@
-nbBalises enregistre 3
+nbBalises enregistre 2
+eee
 rrr
-ttt
-yyyy

@@ -18,7 +18,14 @@
 #include "json.h"
 
 
-//fonction qui permet de formater une chaine en message json
+// Fonction qui vérifie si une chaîne est un nombre
+int isNumber(const char *str) {
+    char *endptr;
+    strtod(str, &endptr);
+    return *endptr == '\0';
+}
+
+// Fonction qui permet de formater une chaîne en message JSON
 void formaterMessage(const char *entree, char *sortie) {
     const char *delims = ":, ";
     char *token, *copy;
@@ -53,12 +60,19 @@ void formaterMessage(const char *entree, char *sortie) {
         fprintf(stderr, "Erreur d'allocation mémoire.\n");
         exit(EXIT_FAILURE);
     }
-    strcat(valeurs, "\"");
-    strcat(valeurs, token);
-    strcat(valeurs, "\"");
+
+    // Si le token est un nombre, on ne l'entoure pas de guillemets
+    if (isNumber(token)) {
+        strcat(valeurs, token);
+    } else {
+        strcat(valeurs, "\"");
+        strcat(valeurs, token);
+        strcat(valeurs, "\"");
+    }
+
     valeurs_len += strlen(token) + 2;
 
-    // On verifie s'il y a d'autres valeurs séparées par des virgules ou des espaces
+    // On vérifie s'il y a d'autres valeurs séparées par des virgules ou des espaces
     while ((token = strtok(NULL, delims)) != NULL) {
         // On alloue de l'espace pour la nouvelle valeur et la virgule
         valeurs = realloc(valeurs, valeurs_len + strlen(token) + 5);
@@ -66,9 +80,17 @@ void formaterMessage(const char *entree, char *sortie) {
             fprintf(stderr, "Erreur d'allocation mémoire.\n");
             exit(EXIT_FAILURE);
         }
-        strcat(valeurs, ", \"");
-        strcat(valeurs, token);
-        strcat(valeurs, "\"");
+
+        // Si le token est un nombre, on ne l'entoure pas de guillemets
+        if (isNumber(token)) {
+            strcat(valeurs, ", ");
+            strcat(valeurs, token);
+        } else {
+            strcat(valeurs, ", \"");
+            strcat(valeurs, token);
+            strcat(valeurs, "\"");
+        }
+
         valeurs_len += strlen(token) + 4;
     }
 
@@ -157,6 +179,7 @@ TableauDeChaines extraireCodeEtValeurs(const char* jsonString) {
     }
 
     size_t longueurCode = codeFin - codeDebut;
+
     result.code = malloc(longueurCode + 1);
     if (result.code == NULL) {
         fprintf(stderr, "Erreur d'allocation mémoire.\n");

@@ -1,3 +1,5 @@
-nbCouleur enregistre 2
-aaa
-rrr
+nbCouleur enregistre 4
+ttt
+ooo
+uuu
+ttt
