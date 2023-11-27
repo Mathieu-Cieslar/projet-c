@@ -15,6 +15,7 @@
 
 #include "client.h"
 #include "bmp.h"
+#include "json.h"
 
 /*
  * Fonction d'envoi et de réception de messages
@@ -28,7 +29,7 @@ int envoie_recois_message(int socketfd)
   // la réinitialisation de l'ensemble des données
   memset(data, 0, sizeof(data));
 
-  // Demandez à l'utilisateur d'entrer un message
+  // On demande à l'utilisateur d'entrer un message
   char message[1024];
   printf("Votre message (max 1000 caracteres): ");
   fgets(message, sizeof(message), stdin);
@@ -58,68 +59,6 @@ int envoie_recois_message(int socketfd)
   return 0;
 }
 
-//fonction qui permet de formater une chaine en message json
-void formaterMessage(const char *entree, char *sortie) {
-    const char *delims = ":, ";
-    char *token, *copy;
-    char *code = NULL;
-    char *valeurs = NULL;
-    size_t valeurs_len = 0;
-
-    // On copie l'entrée pour la modification
-    copy = strdup(entree);
-
-    // On utilise strtok pour extraire le code
-    token = strtok(copy, delims);
-    if (token == NULL) {
-        snprintf(sortie, 200, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
-        free(copy);
-        return;
-    }
-    code = strdup(token);
-
-    // On utilise strtok pour extraire les valeurs
-    token = strtok(NULL, delims);
-    if (token == NULL) {
-        snprintf(sortie, 200, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
-        free(copy);
-        free(code);
-        return;
-    }
-
-    // On ajoute la première valeur (opérateur ou chiffre)
-    valeurs = realloc(valeurs, valeurs_len + strlen(token) + 3);
-    if (valeurs == NULL) {
-        fprintf(stderr, "Erreur d'allocation mémoire.\n");
-        exit(EXIT_FAILURE);
-    }
-    strcat(valeurs, "\"");
-    strcat(valeurs, token);
-    strcat(valeurs, "\"");
-    valeurs_len += strlen(token) + 2;
-
-    // On verifie s'il y a d'autres valeurs séparées par des virgules ou des espaces
-    while ((token = strtok(NULL, delims)) != NULL) {
-        // On alloue de l'espace pour la nouvelle valeur et la virgule
-        valeurs = realloc(valeurs, valeurs_len + strlen(token) + 5);
-        if (valeurs == NULL) {
-            fprintf(stderr, "Erreur d'allocation mémoire.\n");
-            exit(EXIT_FAILURE);
-        }
-        strcat(valeurs, ", \"");
-        strcat(valeurs, token);
-        strcat(valeurs, "\"");
-        valeurs_len += strlen(token) + 4;
-    }
-
-    // Formate la sortie
-    snprintf(sortie, 200, "{\n\t\"code\" : \"%s\",\n\t\"valeurs\" : [ %s ]\n}", code, valeurs);
-
-    // On libère la mémoire allouée
-    free(copy);
-    free(code);
-    free(valeurs);
-}
 
 //fonction qui permet d envoyer le message au format json au serveur
 int envoie_json(int socketfd, char* code)
@@ -203,8 +142,15 @@ char sortie[200];
     perror("erreur lecture");
     return -1;
   }
+  printf("%s \n",data);
+  TableauDeChaines result = extraireCodeEtValeurs(data);
+   char resultToFormat[1024];
+   strcpy(resultToFormat, result.code);
+strcat(resultToFormat, ": ");
+strcat(resultToFormat, result.valeurs);
+strcat(resultToFormat, "\0");
 
-  printf("%s\n", data);
+  printf("%s\n", resultToFormat);
 
   return 0;
 }

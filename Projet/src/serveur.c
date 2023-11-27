@@ -16,6 +16,7 @@
 #include <unistd.h>
 
 #include "serveur.h"
+#include "json.h"
 int socketfd;
 
 int visualize_plot()
@@ -37,45 +38,6 @@ int visualize_plot()
   }
 
   return 0;
-}
-
-// fonction pour formater un json simple avec une seul valeur
-void formatStringForJson(char *chaine) {
-    // On initialise un index pour la nouvelle chaîne
-    int nouvelIndex = 0;
-
-
-    // On parcour chaque caractère de la chaîne
-    for (int i = 0; i < strlen(chaine); i++) {
-        // Ignorer les espaces, guillemets et virgules
-        if (chaine[i] != '"' && chaine[i] != ',') {
-            // On ajoute le caractère à la nouvelle chaîne
-            chaine[nouvelIndex++] = chaine[i];
-        }
-    }
-
-    // On ajoute le caractère nul à la fin de la nouvelle chaîne
-    chaine[nouvelIndex] = '\0';
-
-  
-}
-// fonction pour formater un json contenant une liste
-void formatJsonForList(char *chaine) {
-    // On initialise un index pour la nouvelle chaîne
-    int nouvelIndex = 0;
-
-
-    // On parcour chaque caractère de la chaîne
-    for (int i = 0; i < strlen(chaine); i++) {
-        // Ignorer les espaces, guillemets et virgules
-        if (chaine[i] != '"' && chaine[i] != ' ') {
-            // Ajouter le caractère à la nouvelle chaîne
-            chaine[nouvelIndex++] = chaine[i];
-        }
-    }
-
-    // On ajoute le caractère nul à la fin de la nouvelle chaîne
-    chaine[nouvelIndex] = '\0';
 }
 
 /* renvoyer un message (*data) au client (client_socket_fd)
@@ -238,152 +200,98 @@ double evalOp(char *expression) {
 
 //Fonction pour receptionner un message json et effectuer le bon traitement en fonction du code
 void traiterMessageJSON(int client_socket_fd,const char *jsonString) {
-    // Recherche de la position de la première occurrence du champ "code"
-    const char *codeDebut = strstr(jsonString, "\"code\"");
 
-    // Vérifie si le JSON contient le champ "code"
-    if (codeDebut == NULL) {
-        fprintf(stderr, "Le champ 'code' est introuvable dans le JSON.\n");
-        return;
-    }
+TableauDeChaines result = extraireCodeEtValeurs(jsonString);
 
-    // Avance le pointeur au début de la valeur associée au champ "code"
-    codeDebut = strchr(codeDebut, ':');
-    if (codeDebut == NULL) {
-        fprintf(stderr, "Format JSON invalide.\n");
-        return;
-    }
-    codeDebut++; // Avance après le caractère ':'
+char sortie[200];
+char data[1024];
+ char dataToFormat[1024];
+   // la réinitialisation de l'ensemble des données
+  memset(data, 0, sizeof(data));
 
-    // Ignore les espaces potentiels après le caractère ':' et avant le début de la chaîne de caractères
-    while (*codeDebut == ' ' || *codeDebut == '\t' || *codeDebut == '\n' || *codeDebut == '\r') {
-        codeDebut++;
-    }
+strcpy(dataToFormat, result.code);
+strcat(dataToFormat, ": ");
 
-    // Vérifie si la valeur associée au champ "code" commence par un guillemet
-    if (*codeDebut != '\"') {
-        fprintf(stderr, "Format JSON invalide pour la valeur associée au champ 'code'.\n");
-        return;
-    }
+    
 
-    // Avance le pointeur au début du code
-    codeDebut++;
-
-    // Recherche de la position de la première occurrence du caractère '"'
-    const char *codeFin = strchr(codeDebut, '"');
-
-    // Vérifie si le JSON contient un autre '"'
-    if (codeFin == NULL) {
-        fprintf(stderr, "Format JSON invalide.\n");
-        return;
-    }
-
-    // Calcul de la longueur du code
-    size_t longueurCode = codeFin - codeDebut;
-
-    // Alloue de la mémoire pour le code
-    char *code = malloc(longueurCode + 1);
-    if (code == NULL) {
-        fprintf(stderr, "Erreur d'allocation mémoire.\n");
-        return;
-    }
-
-    // Copie le code dans une chaîne modifiable
-    strncpy(code, codeDebut, longueurCode);
-    code[longueurCode] = '\0'; // Ajoute le caractère de fin de chaîne
-
-    // Recherche de la position de la première occurrence du champ "valeurs"
-    const char *valeursDebut = strstr(jsonString, "\"valeurs\"");
-
-    // Vérifie si le JSON contient le champ "valeurs"
-    if (valeursDebut == NULL) {
-        fprintf(stderr, "Le champ 'valeurs' est introuvable dans le JSON.\n");
-        free(code);
-        return;
-    }
-
-    // Avance le pointeur au début de la valeur associée au champ "valeurs"
-    valeursDebut = strchr(valeursDebut, ':');
-    if (valeursDebut == NULL) {
-        fprintf(stderr, "Format JSON invalide.\n");
-        free(code);
-        return;
-    }
-    valeursDebut++; // Avance après le caractère ':'
-
-    // Ignore les espaces potentiels après le caractère ':' et avant le début du tableau
-    while (*valeursDebut == ' ' || *valeursDebut == '\t' || *valeursDebut == '\n' || *valeursDebut == '\r') {
-        valeursDebut++;
-    }
-
-    // Vérifie si le tableau de valeurs commence bien avec un '['
-    if (*valeursDebut != '[') {
-        fprintf(stderr, "Format JSON invalide pour le tableau de valeurs.\n");
-        free(code);
-        return;
-    }
-
-    // Avance le pointeur au début du tableau
-    valeursDebut++;
-
-    // Recherche de la position de la première occurrence du caractère ']'
-    const char *valeursFin = strchr(valeursDebut, ']');
-
-    // Vérifie si le tableau de valeurs se termine bien par un ']'
-    if (valeursFin == NULL) {
-        fprintf(stderr, "Format JSON invalide pour le tableau de valeurs.\n");
-        free(code);
-        return;
-    }
-
-    // Calcul de la longueur du tableau de valeurs
-    size_t longueurValeurs = valeursFin - valeursDebut;
-
-    // Alloue de la mémoire pour le tableau de valeurs
-    char *valeurs = malloc(longueurValeurs + 1);
-    if (valeurs == NULL) {
-        fprintf(stderr, "Erreur d'allocation mémoire.\n");
-        free(code);
-        return;
-    }
-
-    // Copie le tableau de valeurs dans une chaîne modifiable
-    strncpy(valeurs, valeursDebut, longueurValeurs);
-    valeurs[longueurValeurs] = '\0'; // Ajoute le caractère de fin de chaîne
-
-if (strcmp(code, "message") == 0) {
+if (strcmp(result.code, "message") == 0) {
   //On renvoie le message apres lu le json
-      renvoie_message(client_socket_fd,valeurs);
+  formatStringForJson(result.valeurs);
+strcat(dataToFormat, result.valeurs);
+strcat(dataToFormat, "\0");
+strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+
+// on formate la sortie au format json
+    formaterMessage(data, sortie);
+
+      renvoie_message(client_socket_fd,sortie);
         
         //On renvoie le nom apres avoir decoder le json
-    } else if (strcmp(code, "nom") == 0) {
-     renvoie_message(client_socket_fd,valeurs);
+    } else if (strcmp(result.code, "nom") == 0) {
 
-    }else if (strcmp(code, "calcule") == 0) {
+      formatStringForJson(result.valeurs);
+strcat(dataToFormat, result.valeurs);
+strcat(dataToFormat, "\0");
+strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+
+// on formate la sortie au format json
+    formaterMessage(data, sortie);
+     renvoie_message(client_socket_fd,sortie);
+
+    }else if (strcmp(result.code, "calcule") == 0) {
+
+      
       // on format les valeur recu pour pouvoir les traiter
-      formatStringForJson(valeurs);
+      formatStringForJson(result.valeurs);
+      //printf("data :  %s\n", result.valeurs);
       // On effecture l operation et on renvoir le resutats
-      double result = evalOp(valeurs);
-      printf("Resultat :  %f\n", result);
+      double resultats = evalOp(result.valeurs);
       char chaine[50];
-      snprintf(chaine,50, "%f", result);
-      renvoie_message(client_socket_fd, chaine);
+      snprintf(chaine,50, "%f", resultats);
+
+strcat(dataToFormat, chaine);
+strcat(dataToFormat, "\0");
+strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+
+
+
+// on formate la sortie au format json
+    formaterMessage(data, sortie);
+
+      //printf("Resultat :  %f\n", resultats);
+      renvoie_message(client_socket_fd, sortie);
      
-    } else if (strcmp(code, "couleurs") == 0) {
+    } else if (strcmp(result.code, "couleurs") == 0) {
+
         //On traite la liste de couleurs sous le format json
-          enregistrerCouleursDansFichier("couleur.txt",valeurs);
-    renvoie_message(client_socket_fd, "Couleur Sauvegardé");
+          enregistrerCouleursDansFichier("couleur.txt",result.valeurs);
+
+strcat(dataToFormat, "enregistré");
+strcat(dataToFormat, "\0");
+strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+
+// on formate la sortie au format json
+    formaterMessage(data, sortie);
+
+
+    renvoie_message(client_socket_fd, sortie);
       // on traite les balise sous format json
-    }else if (strcmp(code, "balises") == 0) {
-  enregistrerBalisesDansFichier("balise.txt",valeurs);
-    renvoie_message(client_socket_fd, "Balise Sauvegardé");
+
+    }else if (strcmp(result.code, "balises") == 0) {
+      enregistrerBalisesDansFichier("balise.txt",result.valeurs);
+strcat(dataToFormat, "enregistré");
+strcat(dataToFormat, "\0");
+strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+
+// on formate la sortie au format json
+    formaterMessage(data, sortie);
+  
+    renvoie_message(client_socket_fd, sortie);
     }
      else {
         printf("Choix non valide.\n");
     }
-    // Libère la mémoire allouée
-    free(code);
-    free(valeurs);
+
 
 
 }

@@ -1,3 +1,5 @@
-nbCouleur enregistre 2
-#effff0
-#eggegz
+nbCouleur enregistre 4
+ttt
+ooo
+uuu
+ttt
