@@ -142,8 +142,15 @@ char sortie[200];
     perror("erreur lecture");
     return -1;
   }
+  printf("%s \n",data);
+  TableauDeChaines result = extraireCodeEtValeurs(data);
+   char resultToFormat[1024];
+   strcpy(resultToFormat, result.code);
+strcat(resultToFormat, ": ");
+strcat(resultToFormat, result.valeurs);
+strcat(resultToFormat, "\0");
 
-  printf("%s\n", data);
+  printf("%s\n", resultToFormat);
 
   return 0;
 }

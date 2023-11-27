@@ -211,41 +211,82 @@ char data[1024];
 
 strcpy(dataToFormat, result.code);
 strcat(dataToFormat, ": ");
-formatStringForJson(result.valeurs);
+
+    
+
+if (strcmp(result.code, "message") == 0) {
+  //On renvoie le message apres lu le json
+  formatStringForJson(result.valeurs);
 strcat(dataToFormat, result.valeurs);
 strcat(dataToFormat, "\0");
 strncpy(data,dataToFormat,strlen(dataToFormat)-1);
 
 // on formate la sortie au format json
     formaterMessage(data, sortie);
-    
 
-if (strcmp(result.code, "message") == 0) {
-  //On renvoie le message apres lu le json
-      renvoie_message(client_socket_fd,result.valeurs);
+      renvoie_message(client_socket_fd,sortie);
         
         //On renvoie le nom apres avoir decoder le json
     } else if (strcmp(result.code, "nom") == 0) {
+
+      formatStringForJson(result.valeurs);
+strcat(dataToFormat, result.valeurs);
+strcat(dataToFormat, "\0");
+strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+
+// on formate la sortie au format json
+    formaterMessage(data, sortie);
      renvoie_message(client_socket_fd,sortie);
 
     }else if (strcmp(result.code, "calcule") == 0) {
+
+      
       // on format les valeur recu pour pouvoir les traiter
       formatStringForJson(result.valeurs);
+      //printf("data :  %s\n", result.valeurs);
       // On effecture l operation et on renvoir le resutats
       double resultats = evalOp(result.valeurs);
-      printf("Resultat :  %f\n", resultats);
       char chaine[50];
       snprintf(chaine,50, "%f", resultats);
-      renvoie_message(client_socket_fd, chaine);
+
+strcat(dataToFormat, chaine);
+strcat(dataToFormat, "\0");
+strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+
+
+
+// on formate la sortie au format json
+    formaterMessage(data, sortie);
+
+      //printf("Resultat :  %f\n", resultats);
+      renvoie_message(client_socket_fd, sortie);
      
     } else if (strcmp(result.code, "couleurs") == 0) {
+
         //On traite la liste de couleurs sous le format json
           enregistrerCouleursDansFichier("couleur.txt",result.valeurs);
-    renvoie_message(client_socket_fd, "Couleur Sauvegardé");
+
+strcat(dataToFormat, "enregistré");
+strcat(dataToFormat, "\0");
+strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+
+// on formate la sortie au format json
+    formaterMessage(data, sortie);
+
+
+    renvoie_message(client_socket_fd, sortie);
       // on traite les balise sous format json
+
     }else if (strcmp(result.code, "balises") == 0) {
-  enregistrerBalisesDansFichier("balise.txt",result.valeurs);
-    renvoie_message(client_socket_fd, "Balise Sauvegardé");
+      enregistrerBalisesDansFichier("balise.txt",result.valeurs);
+strcat(dataToFormat, "enregistré");
+strcat(dataToFormat, "\0");
+strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+
+// on formate la sortie au format json
+    formaterMessage(data, sortie);
+  
+    renvoie_message(client_socket_fd, sortie);
     }
      else {
         printf("Choix non valide.\n");
