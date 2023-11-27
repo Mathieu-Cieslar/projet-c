@@ -16,6 +16,7 @@
 
 #include "client.h"
 #include "bmp.h"
+#include "json.h"
 
 /*
  * Fonction d'envoi et de réception de messages
@@ -29,7 +30,7 @@ int envoie_recois_message(int socketfd)
   // la réinitialisation de l'ensemble des données
   memset(data, 0, sizeof(data));
 
-  // Demandez à l'utilisateur d'entrer un message
+  // On demande à l'utilisateur d'entrer un message
   char message[1024];
   printf("Votre message (max 1000 caracteres): ");
   fgets(message, sizeof(message), stdin);
@@ -204,8 +205,15 @@ char sortie[200];
     perror("erreur lecture");
     return -1;
   }
+printf("%s \n",data);
+  TableauDeChaines result = extraireCodeEtValeurs(data);
+   char resultToFormat[1024];
+   strcpy(resultToFormat, result.code);
+strcat(resultToFormat, ": ");
+strcat(resultToFormat, result.valeurs);
+strcat(resultToFormat, "\0");
 
-  printf("%s\n", data);
+  printf("%s\n", resultToFormat);
 
   return 0;
 }
