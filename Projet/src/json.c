@@ -39,7 +39,7 @@ void formaterMessage(const char *entree, char *sortie) {
     // On utilise strtok pour extraire le code
     token = strtok(copy, delims);
     if (token == NULL) {
-        snprintf(sortie, 200, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
+        snprintf(sortie, 1024, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
         free(copy);
         return;
     }
@@ -48,7 +48,7 @@ void formaterMessage(const char *entree, char *sortie) {
     // On utilise strtok pour extraire les valeurs
     token = strtok(NULL, delims);
     if (token == NULL) {
-        snprintf(sortie, 200, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
+        snprintf(sortie, 1024, "{\"erreur\": \"Format invalide pour l'entrée.\"}");
         free(copy);
         free(code);
         return;
@@ -56,6 +56,7 @@ void formaterMessage(const char *entree, char *sortie) {
 
     // On ajoute la première valeur (opérateur ou chiffre)
     valeurs = realloc(valeurs, valeurs_len + strlen(token) + 3);
+    memset(valeurs,0,valeurs_len + strlen(token) + 3);
     if (valeurs == NULL) {
         fprintf(stderr, "Erreur d'allocation mémoire.\n");
         exit(EXIT_FAILURE);
@@ -95,7 +96,7 @@ void formaterMessage(const char *entree, char *sortie) {
     }
 
     // Formate la sortie
-    snprintf(sortie, 200, "{\n\t\"code\" : \"%s\",\n\t\"valeurs\" : [ %s ]\n}", code, valeurs);
+    snprintf(sortie, 1024, "{\n\t\"code\" : \"%s\",\n\t\"valeurs\" : [ %s ]\n}", code, valeurs);
 
     // On libère la mémoire allouée
     free(copy);

@@ -45,6 +45,12 @@ int visualize_plot()
  */
 int renvoie_message(int client_socket_fd, char *data)
 {
+
+  if (validationJSON(data) == 0){
+    printf("%s\n","JSON envoyé non valide");
+    return 0;
+  };
+
   int data_size = write(client_socket_fd, (void *)data, strlen(data));
 
   if (data_size < 0)
@@ -204,7 +210,7 @@ void traiterMessageJSON(int client_socket_fd,const char *jsonString) {
 
 TableauDeChaines result = extraireCodeEtValeurs(jsonString);
 
-char sortie[200];
+char sortie[1024];
 char data[1024];
  char dataToFormat[1024];
    // la réinitialisation de l'ensemble des données
@@ -418,13 +424,17 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
     renvoie_message(client_socket_fd, "Balise Sauvegardé");
   }
   //On regarde si le code est couleurs pour afficher l image
-  if(strcmp(code, "couleurs:") == 0)
+  if(strcmp(code, "couleurs:") == 1)
   {
     printf("Image recu: %s\n", data);
     plot(data);
   }// On regarde si on recoit du json et on fait le traitement adequat
   if(strchr(code, '{') != NULL){
     printf("%s \n",data);
+     if (validationJSON(data) == 0){
+       printf("%s\n","JSON reçu non valide");
+       return 0;
+     };
     traiterMessageJSON(client_socket_fd,data);
   }
   return (EXIT_SUCCESS);

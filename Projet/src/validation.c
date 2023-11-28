@@ -42,99 +42,97 @@ regex_t regex;
     regfree(&regex);  // Libérer la mémoire utilisée par la structure regex
 
     if (reti) {
-        printf("nonnononon");
         return 0;  // La chaîne ne correspond pas à l'expression régulière, ce n'est pas un JSON valide
     }
 
-    // Vérifier que les nombres et les chaînes ne sont pas entourés de guillemets
-    char *pointeur = (char *)data;
-    while (*pointeur) {
-        if (*pointeur == '"') {
-            // Si un guillemet est trouvé, vérifier le contexte
-            char *suivant = pointeur + 1;
-            while (*suivant && (*suivant == ' ' || *suivant == '\t' || *suivant == '\n' || *suivant == '\r')) {
-                // Ignorer les espaces, tabulations et sauts de ligne
-                suivant++;
+    // Recherche du début du tableau de valeurs
+    char *start = strstr(data, "\"valeurs\" : [");
+    if (start == NULL) {
+        printf("Erreur : Impossible de trouver le tableau de valeurs.\n");
+        return 0;
+    }
+
+    // Déplacement au début des valeurs
+    start += strlen("\"valeurs\" : [");
+
+    // Recherche de la fin du tableau de valeurs
+    char *end = strchr(start, ']');
+    if (end == NULL) {
+        printf("Erreur : Impossible de trouver la fin du tableau de valeurs.\n");
+        return 0;
+    }
+
+    // Copie des valeurs dans une nouvelle chaîne de caractères
+    char *values = (char *)malloc(end - start + 1);
+    strncpy(values, start, end - start);
+
+    values[end - start] = '\0';
+
+    // supprime les espaces en début de chaîne
+    while (values[0] == ' ') {
+        values++;
+    }
+
+    // supprime les espaces en fin de chaîne
+    while (values[strlen(values) - 1] == ' ') {
+        values[strlen(values) - 1] = '\0';
+    }
+
+    // On transforme la chaîne en tableau de chaînes, on compte le nombre de valeurs et on enlève les espaces
+    // On ne prend en compte que les valeurs qui ne sont pas entre guillemets
+    int nbValeurs = 0;
+    for (int i = 0; i < strlen(values); i++) {
+        if (values[i] == ',') {
+            nbValeurs++;
+        }
+    }
+    nbValeurs++;
+
+    char **valeurs = (char **)malloc(nbValeurs * sizeof(char *));
+    char *valeur = strtok(values, ",");
+    int i = 0;
+    while (valeur != NULL) {
+        valeurs[i] = valeur;
+        valeur = strtok(NULL, ",");
+        i++;
+    }
+
+    for (int i = 0; i < nbValeurs; i++) {
+        // supprime les espaces en début de chaîne
+        while (valeurs[i][0] == ' ') {
+            valeurs[i]++;
+        }
+
+        // supprime les espaces en fin de chaîne
+        while (valeurs[i][strlen(valeurs[i]) - 1] == ' ') {
+            valeurs[i][strlen(valeurs[i]) - 1] = '\0';
+        }
+    }
+
+    // Vérifier que les valeurs sont des nombres avec un regex
+    // On ne vérifie que les valeurs qui n'ont pas de guillemets
+    const char *pattern2 = "^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$";
+    const char *pattern3 = "\"^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$\"";
+    if (reti) {
+        fprintf(stderr, "Erreur lors de la compilation de l'expression régulière\n");
+        return 0;  // Retourner 0 en cas d'erreur
+    }
+
+    for (i = 0; i < nbValeurs; i++) {
+        if (valeurs[i][0] != '"') {
+            reti = regcomp(&regex, pattern2, REG_EXTENDED);
+            reti = regexec(&regex, valeurs[i], 0, NULL, 0);
+            if (reti) {
+                return 0;  // La chaîne ne correspond pas à l'expression régulière, ce n'est pas un JSON valide
             }
-            if (*suivant == '-' || (*suivant >= '0' && *suivant <= '9')) {
-                // Si le caractère suivant est un chiffre ou un signe moins, le guillemet est incorrect
-                printf("non");
-                return 0;
+        }if(valeurs[i][0] == '"') {
+            reti = regcomp(&regex, pattern3, REG_EXTENDED);
+            reti = regexec(&regex, valeurs[i], 0, NULL, 0);
+            if (!reti) {
+                return 0;  // La chaîne ne correspond pas à l'expression régulière, ce n'est pas un JSON valide
             }
         }
-        pointeur++;
     }
-    printf("pouii");
+
     return 1;  // La chaîne correspond à la structure JSON et respecte la condition sur les guillemets
-    // //On verifie bien qu'on commence par une "{"
-    // if(data[0] == '{'){
-    //     printf("%s\n","on commence bien par une accollade");
-    // }else{
-    //     printf("%s\n","on ne commence pas par une accollade");   
-    //     exit(0);
-    // }
-
-    // //nombre d'accolade ouvrante
-    // int compteur1 = 0;
-    // //nombre d'accolade fermante
-    // int compteur2 = 0;
-
-    // int index = 0;
-    // // Parcourir chaque caractère de la chaîne data
-    // while (*data != '\0') {
-    //     // Vérifier si le caractère actuel est une accolade
-    //     if (*data == '{') {
-    //         compteur1++;
-    //         while (isspace_custom(*data)) {
-    //             salut++;
-    //         }
-    //     }
-    //     if (*data == '}') {
-    //         compteur2++;
-    //     }
-
-    //     // Passer au caractère suivant
-    //     data++;
-    //     //si on est au dernier carcactere (\0) alors on va regarder si le dernier caracter - 1 est bien une accolade fermante
-    //     if(*data == '\0'){
-    //         data--;
-    //         if (*data == '}'){
-    //             printf("%s\n", data);
-    //             printf("%s\n", "on termine bien par une accollade");
-    //         }else{
-    //             printf("%s\n", "on ne termine pas par une accollade");
-    //             exit(0);
-    //         }
-    //         data++;
-    //     }
-    //     if(index == 4){
-    //         printf("%d\n", data[index]);
-    //         printf("%s\n", data);
-    //     }
-    //     index++;
-    // }
-    // if(compteur1 == 1){
-    //     printf("%s\n","on a bien qu'une seule accolade ouvrante");
-    //     if(compteur2 == 1){
-    //         printf("%s\n","on a bien qu'une seule accolade fermante");
-
-    //     }else{
-    //         printf("%s\n","on a pas qu'une seule accolade fermante");
-    //         exit(0);
-    //     }
-    // }else{
-    //     printf("%s\n","on a pas qu'une seule accolade ouvrante");
-    //     exit(0);
-    // }
-
-
-
-    //printf("%d\n",data[1]);
-    return 0;
 }
-
-//fonction qui permet de lire le prochain caractere en ignorant les espaces ou tabulations
-int isspace_custom(char caractere) {
-    return caractere == ' ' || caractere == '\t';
-}
-
