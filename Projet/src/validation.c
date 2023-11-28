@@ -23,8 +23,15 @@
 #include <unistd.h>
 #include <regex.h>
 
+int validationCode(char data[1024]);
+
 int validationJSON(char data[1024]){
-regex_t regex;
+
+    if(!validationCode(data)){
+        return 0;
+    }
+
+    regex_t regex;
     int reti;
 
     // Expression régulière pour vérifier la structure JSON
@@ -135,4 +142,18 @@ regex_t regex;
     }
 
     return 1;  // La chaîne correspond à la structure JSON et respecte la condition sur les guillemets
+}
+
+int validationCode(char data[1024]){
+    regex_t regex;
+
+    int resultCode;
+    const char *pattern = "(\"code\"\\s*:\\s*\"(calcule|nom|balises|couleurs|message)\")";
+    resultCode = regcomp(&regex, pattern, REG_EXTENDED);
+    resultCode = regexec(&regex, data, 0, NULL, 0);
+    if (resultCode) {
+        return 0;  // La chaîne ne correspond pas à l'expression régulière, ce n'est pas un JSON valide
+    }else{
+        return 1; 
+    }
 }
