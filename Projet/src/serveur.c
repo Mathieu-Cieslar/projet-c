@@ -17,6 +17,7 @@
 
 #include "serveur.h"
 #include "json.h"
+#include "operations.h"
 int socketfd;
 
 int visualize_plot()
@@ -191,9 +192,46 @@ double evalOp(char *expression) {
                 exit(1);
             }
         }
+
         default:
+                if (strcmp(operateur,"moyenne") == 0)
+                {
+
+                   char  *token;
+  char *tokens[100]; // Tableau de pointeurs vers des chaînes
+  int count = 0;
+                 while (token != NULL){
+    token = strtok(NULL, " ");
+    if (token == NULL) break;
+
+    tokens[count] = strdup(token); // Stocke la copie de la chaîne dans le tableau
+    count++;
+  }
+  double moyenne = calculerMoyenne(tokens, count);
+return moyenne ;
+
+  // // Affiche les éléments du tableau
+  // for (int i = 0; i < count; i++) {
+  //   printf("%d: %s\n", i + 1, tokens[i]);
+  //   free(tokens[i]); // Libère la mémoire allouée pour chaque chaîne
+  // }
+                  return 1;
+                }else if (strcmp(operateur,"minimum")== 0)
+                {
+                  return 2;
+                }
+                else if (strcmp(operateur,"maximum")== 0)
+                {
+                  return 3;
+                }
+                else if (strcmp(operateur,"ecart-type")== 0)
+                {
+                  return 4;
+                }else{
+        printf("data %s\n",strtok(NULL," "));
             printf("Opérateur non reconnu\n");
             exit(1);
+                }
     }
 }
 
