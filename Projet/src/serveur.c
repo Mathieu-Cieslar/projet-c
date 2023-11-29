@@ -194,50 +194,34 @@ double evalOp(char *expression) {
         }
 
         default:{
-char *token = strtok(NULL, " ");
-                  char *tokens[100]; // Tableau de pointeurs vers des chaînes
-                  int count = 0;
-                 while (token != NULL){
-    token = strtok(NULL, " ");
-    if (token == NULL) break;
+char *token = NULL;
+    char *tokens[100]; // Tableau de pointeurs vers des chaînes
+    int count = 0;
 
-    tokens[count] = strdup(token); // Stocke la copie de la chaîne dans le tableau
-    count++;
+    while (1) {
+        token = strtok(NULL, " ");
+        if (token == NULL) break;
 
-  }
-        for (int i = 0; i < count; i++) {
-        printf("%s \n",tokens[i]);
+        tokens[count] = strdup(token); // Stocke la copie de la chaîne dans le tableau
+        count++;
     }
     if (strcmp(operateur,"moyenne") == 0)
      {            
-  double moyenne = calculerMoyenne(tokens, count);
-  printf("moy %f \n",moyenne);
-  for (int i = 0; i < count; i++) {
-        free(tokens[i]);
-    }
+  float moyenne = calculerMoyenne(tokens, count);
                 return moyenne ;
                 }else if (strcmp(operateur,"minimum")== 0)
                 {
-                  double min = trouverMinimum(tokens,count);
-                  for (int i = 0; i < count; i++) {
-        free(tokens[i]);
-    }
+                  float min = trouverMinimum(tokens,count);
                   return min ;
                 }
                 else if (strcmp(operateur,"maximum")== 0)
                 {
-                  double max = trouverMaximum(tokens,count);
-                  for (int i = 0; i < count; i++) {
-        free(tokens[i]);
-    }
+                  float max = trouverMaximum(tokens,count);
                   return max;
                 }
                 else if (strcmp(operateur,"ecart-type")== 0)
                 {
-                  double ecart = calculerEcartType(tokens,count);
-                 for (int i = 0; i < count; i++) {
-        free(tokens[i]);
-    }
+                  float ecart = calculerEcartType(tokens,count);
                   return ecart ;
                 }else{
                   for (int i = 0; i < count; i++) {
@@ -300,6 +284,7 @@ strncpy(data,dataToFormat,strlen(dataToFormat)-1);
       //printf("data :  %s\n", result.valeurs);
       // On effecture l operation et on renvoir le resutats
       double resultats = evalOp(result.valeurs);
+
       char chaine[50];
       snprintf(chaine,50, "%f", resultats);
 
@@ -307,12 +292,9 @@ strcat(dataToFormat, chaine);
 strcat(dataToFormat, "\0");
 strncpy(data,dataToFormat,strlen(dataToFormat)-1);
 
-
-
 // on formate la sortie au format json
     formaterMessage(data, sortie);
-
-
+          
       //printf("Resultat :  %f\n", resultats);
       renvoie_message(client_socket_fd, sortie);
      

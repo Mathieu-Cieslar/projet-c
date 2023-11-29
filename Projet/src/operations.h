@@ -9,7 +9,7 @@
 /* 
  * Code pour traiter différents types d'opérations mathématiques
  */
-double calculerMoyenne(char *tableau[], int taille);
-double trouverMinimum(char *tableau[], int taille) ;
-double trouverMaximum(char *tableau[], int taille);
-double calculerEcartType(char *tableau[], int taille) ;
+float calculerMoyenne(char *tableau[], int taille);
+float trouverMinimum(char *tableau[], int taille) ;
+float trouverMaximum(char *tableau[], int taille);
+float calculerEcartType(char *tableau[], int taille) ;

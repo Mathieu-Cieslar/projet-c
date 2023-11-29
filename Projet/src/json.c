@@ -33,6 +33,8 @@ void formaterMessage(const char *entree, char *sortie) {
     char *valeurs = NULL;
     size_t valeurs_len = 0;
 
+
+
     // On copie l'entrée pour la modification
     copy = strdup(entree);
 
@@ -53,13 +55,15 @@ void formaterMessage(const char *entree, char *sortie) {
         free(code);
         return;
     }
-
     // On ajoute la première valeur (opérateur ou chiffre)
     valeurs = realloc(valeurs, valeurs_len + strlen(token) + 3);
+
+        
     if (valeurs == NULL) {
         fprintf(stderr, "Erreur d'allocation mémoire.\n");
         exit(EXIT_FAILURE);
     }
+    
 
     // Si le token est un nombre, on ne l'entoure pas de guillemets
     if (isNumber(token)) {
@@ -71,6 +75,9 @@ void formaterMessage(const char *entree, char *sortie) {
     }
 
     valeurs_len += strlen(token) + 2;
+
+   
+
 
     // On vérifie s'il y a d'autres valeurs séparées par des virgules ou des espaces
     while ((token = strtok(NULL, delims)) != NULL) {
@@ -94,6 +101,7 @@ void formaterMessage(const char *entree, char *sortie) {
         valeurs_len += strlen(token) + 4;
     }
 
+    
     // Formate la sortie
     snprintf(sortie, 200, "{\n\t\"code\" : \"%s\",\n\t\"valeurs\" : [ %s ]\n}", code, valeurs);
 
