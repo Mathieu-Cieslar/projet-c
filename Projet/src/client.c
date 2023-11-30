@@ -7,6 +7,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -73,11 +74,13 @@ if (strcmp(code, "message") == 0) {
   // on format le message utilisateur au format json
       char message[1024];
     printf("Votre message (max 1000 caracteres): ");
-    fgets(message, sizeof(message), stdin);
-    strncpy(dataToFormat,message,strlen(message)-1);
+    scanf(" %[^\n]s", message);
+
+    strncpy(dataToFormat,message,strlen(message));
+        printf("val %s \n",message);
     strcpy(dataToFormat, "message: ");
     strcat(dataToFormat, message);
-        strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+        strncpy(data,dataToFormat,strlen(dataToFormat));
         
     } else if (strcmp(code, "nom") == 0) {
       //On format le nom utilisateur au format json
@@ -89,28 +92,28 @@ if (strcmp(code, "message") == 0) {
 // On saisit le calcul au format json
         char calcul[1024];
   printf("Entrez votre calcul sous la forme (operateur num1 num2) : ");
-  fgets(calcul, sizeof(calcul), stdin);
+  scanf(" %[^\n]s", calcul);
   strcpy(dataToFormat, "calcule: ");
   strcat(dataToFormat, calcul);
-  strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+  strncpy(data,dataToFormat,strlen(dataToFormat));
      
     } else if (strcmp(code, "couleurs") == 0) {
       //on saisie la liste des couleurs au format json
        char listC[1024];
   printf("Entrez votre liste de couleurs sous la forme : (nbCouleur,couleur1,...) : ");
-fgets(listC, sizeof(listC), stdin);
+scanf(" %[^\n]s", listC);
   strcpy(dataToFormat, "couleurs: ");
   strcat(dataToFormat, listC);
-  strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+  strncpy(data,dataToFormat,strlen(dataToFormat));
       
     }else if (strcmp(code, "balises") == 0) {
       //on saisie la liste des balise au format json
   char listB[1024];
   printf("Entrez votre liste de balises sous la forme : (nbBalise,balise1,...) : ");
-fgets(listB, sizeof(listB), stdin);
+scanf(" %[^\n]s", listB);
   strcpy(dataToFormat, "balises: ");
   strcat(dataToFormat, listB);
-  strncpy(data,dataToFormat,strlen(dataToFormat)-1);
+  strncpy(data,dataToFormat,strlen(dataToFormat));
     }
      else {
         printf("Choix non valide.\n");
@@ -375,7 +378,9 @@ int main(int argc, char **argv)
   int socketfd;
 
   struct sockaddr_in server_addr;
-
+  bool stayConnected = true;
+  while (stayConnected)
+  {
   /*
    * Creation d'une socket
    */
@@ -401,78 +406,128 @@ int main(int argc, char **argv)
   }
 
 //si la commande ne coomporte pas au moins 2 arguments on affiche une erreur
-  if (argc < 2 ) 
-  {
-    puts("Ereur dans la commande le client necessite 1 arguments et eventuellement un deuxieme argument pour l envoi en json \n");
+  // if (argc < 2 ) 
+  // {
+  //   puts("Ereur dans la commande le client necessite 1 arguments et eventuellement un deuxieme argument pour l envoi en json \n");
+  // }
+
+
+    printf("Choose an action:\n");
+    printf("1. Envoyer un nom\n");
+    printf("2. Envoyer une opération\n");
+    printf("3. Envoyer une liste de couleurs\n");
+    printf("4. Envoyer un message\n");
+    printf("5. Envoyer une liste de balises\n");
+    printf("6. Envoyer les couleurs d'une image BMP\n");
+    printf("7. Exit\n");
+
+    int choice;
+    printf("Enter your choice: ");
+    scanf("%d", &choice);
+
+    switch (choice)
+    {
+    case 1:
+     envoie_json(socketfd,"nom");
+      break;
+    case 2:
+      envoie_json(socketfd,"calcule");
+      break;
+    case 3:
+      envoie_json(socketfd,"couleurs");
+      break;
+    case 4:
+      envoie_json(socketfd,"message");
+      break;
+    case 5:
+      envoie_json(socketfd,"balises");
+      break;
+    case 6:
+      envoie_json(socketfd,"calcule");
+      break;
+    case 7:
+      stayConnected = false; // Exit the loop
+      break;
+    default:
+      printf("Invalid choice. Please enter a number between 1 and 7.\n");
+    }
+
+    close(socketfd); // Close the socket after each request
+
+    // Additional logic to decide whether to stay connected or exit the loop
   }
+
+  return 0;
+}
+
 
 //on regarde si la commande demande le nom
-  if ( strcmp( argv[1],"nom") == 0 ) 
-  {
-    //on regarde si le parametre json a ete active
-    if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
-  {
-    envoie_json(socketfd,argv[1]);
-  }else{
-    envoie_nom_client(socketfd);
-  }
-  }
-  else if (strcmp( argv[1], "calcule" ) ==0) 
-  {  
-    if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
-  {
-    envoie_json(socketfd,argv[1]);
-  }else{
-    envoie_operateur_numero(socketfd);
-  }
-  }
-  else if ( strcmp( argv[1], "couleurs" ) ==0) 
-  {
-      if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
-  {
-    envoie_json(socketfd,argv[1]);
-  }else{
-    envoie_list_couleurs(socketfd);
-  }
-  }
-  else if (strcmp( argv[1], "message")==0 )
-  {
-      if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
-  {
-    envoie_json(socketfd,argv[1]);
-  }else{
-    // envoyer et recevoir un message
-    envoie_recois_message(socketfd);
-  }
-  }
-    else if ( strcmp( argv[1], "balises")==0 )
-  {
-      if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
-  {
-    envoie_json(socketfd,argv[1]);
-  }else{
-    // envoyer et recevoir un message
-    envoie_list_balises(socketfd);
-  }
+//   if ( strcmp( argv[1],"nom") == 0 ) 
+//   {
+//     //on regarde si le parametre json a ete active
+//     if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+//   {
+//     envoie_json(socketfd,argv[1]);
+//   }else{
+//     envoie_nom_client(socketfd);
+//   }
+//   }
+//   else if (strcmp( argv[1], "calcule" ) ==0) 
+//   {  
+//     if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+//   {
+//     envoie_json(socketfd,argv[1]);
+//   }else{
+//     envoie_operateur_numero(socketfd);
+//   }
+//   }
+//   else if ( strcmp( argv[1], "couleurs" ) ==0) 
+//   {
+//       if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+//   {
+//     envoie_json(socketfd,argv[1]);
+//   }else{
+//     envoie_list_couleurs(socketfd);
+//   }
+//   }
+//   else if (strcmp( argv[1], "message")==0 )
+//   {
+//       if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+//   {
+//     envoie_json(socketfd,argv[1]);
+//   }else{
+//     // envoyer et recevoir un message
+//     envoie_recois_message(socketfd);
+//   }
+//   }
+//     else if ( strcmp( argv[1], "balises")==0 )
+//   {
+//       if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+//   {
+//     envoie_json(socketfd,argv[1]);
+//   }else{
+//     // envoyer et recevoir un message
+//     envoie_list_balises(socketfd);
+//   }
     
-  }
-  else if ( strstr(argv[1],".bmp") != NULL)
-  {
-    if (argc == 3)
-    {
-          // envoyer et recevoir les couleurs prédominantes
-    // d'une image au format BMP (argv[1])
-    envoie_couleurs(socketfd, argv[1],argv[2]);
-    }else{
-    // envoyer et recevoir les couleurs prédominantes
-    // d'une image au format BMP (argv[1])
-    envoie_couleurs(socketfd, argv[1],"");
-    }
+//   }
+//   else if ( strstr(argv[1],".bmp") != NULL)
+//   {
+//     if (argc == 3)
+//     {
+//           // envoyer et recevoir les couleurs prédominantes
+//     // d'une image au format BMP (argv[1])
+//     envoie_couleurs(socketfd, argv[1],argv[2]);
+//     }else{
+//     // envoyer et recevoir les couleurs prédominantes
+//     // d'une image au format BMP (argv[1])
+//     envoie_couleurs(socketfd, argv[1],"");
+//     } 
   
-  }
-else{
-  puts("commande non reconnue");
-}
+//   }
+// else{
+//   puts("commande non reconnue");
+// }
 
-  close(socketfd);
-}
+//   close(socketfd);
+// }
