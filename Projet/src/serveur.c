@@ -17,6 +17,7 @@
 
 #include "serveur.h"
 #include "json.h"
+#include "operations.h"
 int socketfd;
 
 int visualize_plot()
@@ -191,9 +192,46 @@ double evalOp(char *expression) {
                 exit(1);
             }
         }
-        default:
+
+        default:{
+char *token = NULL;
+    char *tokens[100]; // Tableau de pointeurs vers des chaînes
+    int count = 0;
+
+    while (1) {
+        token = strtok(NULL, " ");
+        if (token == NULL) break;
+
+        tokens[count] = strdup(token); // Stocke la copie de la chaîne dans le tableau
+        count++;
+    }
+    if (strcmp(operateur,"moyenne") == 0)
+     {            
+  float moyenne = calculerMoyenne(tokens, count);
+                return moyenne ;
+                }else if (strcmp(operateur,"minimum")== 0)
+                {
+                  float min = trouverMinimum(tokens,count);
+                  return min ;
+                }
+                else if (strcmp(operateur,"maximum")== 0)
+                {
+                  float max = trouverMaximum(tokens,count);
+                  return max;
+                }
+                else if (strcmp(operateur,"ecart-type")== 0)
+                {
+                  float ecart = calculerEcartType(tokens,count);
+                  return ecart ;
+                }else{
+                  for (int i = 0; i < count; i++) {
+        free(tokens[i]);
+    }
+        printf("data %s\n",strtok(NULL," "));
             printf("Opérateur non reconnu\n");
             exit(1);
+                }
+    }
     }
 }
 
@@ -246,6 +284,7 @@ strncpy(data,dataToFormat,strlen(dataToFormat)-1);
       //printf("data :  %s\n", result.valeurs);
       // On effecture l operation et on renvoir le resutats
       double resultats = evalOp(result.valeurs);
+
       char chaine[50];
       snprintf(chaine,50, "%f", resultats);
 
@@ -253,11 +292,9 @@ strcat(dataToFormat, chaine);
 strcat(dataToFormat, "\0");
 strncpy(data,dataToFormat,strlen(dataToFormat)-1);
 
-
-
 // on formate la sortie au format json
     formaterMessage(data, sortie);
-
+          
       //printf("Resultat :  %f\n", resultats);
       renvoie_message(client_socket_fd, sortie);
      
