@@ -157,3 +157,23 @@ int validationCode(char data[1024]){
         return 1; 
     }
 }
+
+int validationMessageNom(char data[1024]){
+    //ce regex va verifier si on a bien qu'un seul element en chaine de caractere dans la liste pour "valeurs" dans Message
+    regex_t regex;
+
+    int resultCode;
+    const char *pattern = "\"valeurs\"\\s*:\\s*\\[\\s*\"([^\"]*)\"\\s*\\]";
+    resultCode = regcomp(&regex, pattern, REG_EXTENDED);
+    resultCode = regexec(&regex, data, 0, NULL, 0);
+    if (resultCode) {
+        return 0;  // La chaîne ne correspond pas à l'expression régulière, ce n'est pas un JSON valide
+    }else{
+        return 1; 
+    }
+     
+}
+
+int ValidationCalcule(char data[1024]){
+    
+}
