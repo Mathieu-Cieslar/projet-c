@@ -14,6 +14,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/select.h>
+
+#define MAX_CLIENTS 10
 
 #include "serveur.h"
 #include "json.h"
@@ -475,76 +478,95 @@ void gestionnaire_ctrl_c(int signal)
   exit(0); // Quitter proprement le programme.
 }
 
-int main()
-{
-  int bind_status;
+int main() {
+    int socketfd, bind_status;
 
-  struct sockaddr_in server_addr;
+    struct sockaddr_in server_addr;
+    fd_set read_fds, active_fds;
+    int client_socket_fds[MAX_CLIENTS] = {0};
 
-  /*
-   * Creation d'une socket
-   */
-  socketfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (socketfd < 0)
-  {
-    perror("Unable to open a socket");
-    return -1;
-  }
-
-  int option = 1;
-  setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
-
-  // détails du serveur (adresse et port)
-  memset(&server_addr, 0, sizeof(server_addr));
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(PORT);
-  server_addr.sin_addr.s_addr = INADDR_ANY;
-
-  // Relier l'adresse à la socket
-  bind_status = bind(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
-  if (bind_status < 0)
-  {
-    perror("bind");
-    return (EXIT_FAILURE);
-  }
-
-  // Enregistrez la fonction de gestion du signal Ctrl+C
-  signal(SIGINT, gestionnaire_ctrl_c);
-
-  // Écouter les messages envoyés par le client en boucle infinie
-  while (1)
-  {
-    // Écouter les messages envoyés par le client
-    listen(socketfd, 10);
-
-    // Lire et répondre au client
-    struct sockaddr_in client_addr;
-    char data[1024];
-
-    unsigned int client_addr_len = sizeof(client_addr);
-
-    // nouvelle connection de client
-    int client_socket_fd = accept(socketfd, (struct sockaddr *)&client_addr, &client_addr_len);
-    if (client_socket_fd < 0)
-    {
-      perror("accept");
-      return (EXIT_FAILURE);
+    // Création d'une socket
+    socketfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (socketfd < 0) {
+        perror("Impossible d'ouvrir une socket");
+        return -1;
     }
 
-    // la réinitialisation de l'ensemble des données
-    memset(data, 0, sizeof(data));
+    int option = 1;
+    setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
-    // lecture de données envoyées par un client
-    int data_size = read(client_socket_fd, (void *)data, sizeof(data));
+    // Détails du serveur (adresse et port)
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
 
-    if (data_size < 0)
-    {
-      perror("erreur lecture");
-      return (EXIT_FAILURE);
+    // Relier l'adresse à la socket
+    bind_status = bind(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    if (bind_status < 0) {
+        perror("bind");
+        return (EXIT_FAILURE);
     }
 
-    recois_envoie_message(client_socket_fd, data);
-  }
+    // Enregistrez la fonction de gestion du signal Ctrl+C
+    signal(SIGINT, gestionnaire_ctrl_c);
 
-  return 0;
+    // Écouter les messages envoyés par le client en boucle infinie
+    listen(socketfd, MAX_CLIENTS);
+
+    FD_ZERO(&active_fds);
+    FD_SET(socketfd, &active_fds);
+
+    while (1) {
+        read_fds = active_fds;
+
+        if (select(FD_SETSIZE, &read_fds, NULL, NULL, NULL) < 0) {
+            perror("select");
+            return (EXIT_FAILURE);
+        }
+
+        // Vérifier si la socket d'écoute a des données prêtes à être lues (nouvelle connexion)
+        if (FD_ISSET(socketfd, &read_fds)) {
+            struct sockaddr_in client_addr;
+            unsigned int client_addr_len = sizeof(client_addr);
+
+            // Nouvelle connexion de client
+            int client_socket_fd = accept(socketfd, (struct sockaddr *)&client_addr, &client_addr_len);
+            if (client_socket_fd < 0) {
+                perror("accept");
+                return (EXIT_FAILURE);
+            }
+
+            // Ajouter le nouveau client à l'ensemble actif
+            for (int i = 0; i < MAX_CLIENTS; ++i) {
+                if (client_socket_fds[i] == 0) {
+                    client_socket_fds[i] = client_socket_fd;
+                    FD_SET(client_socket_fd, &active_fds);
+                    break;
+                }
+            }
+        }
+
+        // Parcourir tous les clients existants pour lire et répondre
+        for (int i = 0; i < MAX_CLIENTS; ++i) {
+            if (client_socket_fds[i] > 0 && FD_ISSET(client_socket_fds[i], &read_fds)) {
+                char data[1024];
+                memset(data, 0, sizeof(data));
+
+                // Lecture de données envoyées par un client
+                int data_size = read(client_socket_fds[i], (void *)data, sizeof(data));
+
+                if (data_size <= 0) {
+                    // Le client a fermé la connexion
+                    close(client_socket_fds[i]);
+                    FD_CLR(client_socket_fds[i], &active_fds);
+                    client_socket_fds[i] = 0;
+                } else {
+                    recois_envoie_message(client_socket_fds[i], data);
+                }
+            }
+        }
+    }
+
+    return 0;
 }
