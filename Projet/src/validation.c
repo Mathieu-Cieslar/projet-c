@@ -22,14 +22,18 @@
 #include <string.h>
 #include <unistd.h>
 #include <regex.h>
+#include "json.h"
 
 int validationCode(char data[1024]);
+
+int ValidationCalcule(char data[1024]);
 
 int validationJSON(char data[1024]){
 
     if(!validationCode(data)){
         return 0;
     }
+    ValidationCalcule(data);
 
     regex_t regex;
     int reti;
@@ -175,5 +179,9 @@ int validationMessageNom(char data[1024]){
 }
 
 int ValidationCalcule(char data[1024]){
-    
+    TableauDeChaines result = extraireCodeEtValeurs(data);
+
+    printf("%s\n",result.valeurs);
+
+    return 1;
 }
