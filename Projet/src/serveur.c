@@ -508,9 +508,6 @@ int main() {
         return (EXIT_FAILURE);
     }
 
-    // Enregistrez la fonction de gestion du signal Ctrl+C
-    signal(SIGINT, gestionnaire_ctrl_c);
-
     // Écouter les messages envoyés par le client en boucle infinie
     listen(socketfd, MAX_CLIENTS);
 

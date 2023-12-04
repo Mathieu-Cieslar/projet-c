@@ -379,6 +379,9 @@ int main(int argc, char **argv)
 
   struct sockaddr_in server_addr;
   bool stayConnected = true;
+
+  // multi client, on garde la connexion ouverte 
+  if(argc < 2){
   while (stayConnected)
   {
   /*
@@ -404,25 +407,17 @@ int main(int argc, char **argv)
     perror("connection serveur");
     exit(EXIT_FAILURE);
   }
-
-//si la commande ne coomporte pas au moins 2 arguments on affiche une erreur
-  // if (argc < 2 ) 
-  // {
-  //   puts("Ereur dans la commande le client necessite 1 arguments et eventuellement un deuxieme argument pour l envoi en json \n");
-  // }
-
-
-    printf("Choose an action:\n");
+    printf("\n");
+    printf("Choisissez une action:\n");
     printf("1. Envoyer un nom\n");
     printf("2. Envoyer une opération\n");
     printf("3. Envoyer une liste de couleurs\n");
     printf("4. Envoyer un message\n");
     printf("5. Envoyer une liste de balises\n");
-    printf("6. Envoyer les couleurs d'une image BMP\n");
-    printf("7. Exit\n");
+    printf("7. Sortie\n");
 
     int choice;
-    printf("Enter your choice: ");
+    printf("Entrez votre choix: ");
     scanf("%d", &choice);
 
     switch (choice)
@@ -443,91 +438,117 @@ int main(int argc, char **argv)
       envoie_json(socketfd,"balises");
       break;
     case 6:
-      envoie_json(socketfd,"calcule");
-      break;
-    case 7:
       stayConnected = false; // Exit the loop
       break;
     default:
-      printf("Invalid choice. Please enter a number between 1 and 7.\n");
+      printf("Choix invalide. Entrez un nombre entre 1 et 6.\n");
     }
 
     close(socketfd); // Close the socket after each request
 
     // Additional logic to decide whether to stay connected or exit the loop
   }
+  }
+  //Cas d'un client unique 
+  else{ 
+
+/*
+   * Creation d'une socket
+   */
+  socketfd = socket(AF_INET, SOCK_STREAM, 0);
+  if (socketfd < 0)
+  {
+    perror("socket");
+    exit(EXIT_FAILURE);
+  }
+    // détails du serveur (adresse et port)
+  memset(&server_addr, 0, sizeof(server_addr));
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(PORT);
+  server_addr.sin_addr.s_addr = INADDR_ANY;
+
+  // demande de connection au serveur
+  int connect_status = connect(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+  if (connect_status < 0)
+  {
+    perror("connection serveur");
+    exit(EXIT_FAILURE);
+  }
+
+  //on regarde si la commande demande le nom
+  if ( strcmp( argv[1],"nom") == 0 ) 
+  {
+    //on regarde si le parametre json a ete active
+    if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+  {
+    envoie_json(socketfd,argv[1]);
+  }else{
+    envoie_nom_client(socketfd);
+  }
+  }
+  else if (strcmp( argv[1], "calcule" ) ==0) 
+  {  
+    if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+  {
+    envoie_json(socketfd,argv[1]);
+  }else{
+    envoie_operateur_numero(socketfd);
+  }
+  }
+  else if ( strcmp( argv[1], "couleurs" ) ==0) 
+  {
+      if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+  {
+    envoie_json(socketfd,argv[1]);
+  }else{
+    envoie_list_couleurs(socketfd);
+  }
+  }
+  else if (strcmp( argv[1], "message")==0 )
+  {
+      if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+  {
+    envoie_json(socketfd,argv[1]);
+  }else{
+    // envoyer et recevoir un message
+    envoie_recois_message(socketfd);
+  }
+  }
+    else if ( strcmp( argv[1], "balises")==0 )
+  {
+      if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
+  {
+    envoie_json(socketfd,argv[1]);
+  }else{
+    // envoyer et recevoir un message
+    envoie_list_balises(socketfd);
+  }
+    
+  }
+  else if ( strstr(argv[1],".bmp") != NULL)
+  {
+    if (argc == 3)
+    {
+          // envoyer et recevoir les couleurs prédominantes
+    // d'une image au format BMP (argv[1])
+    envoie_couleurs(socketfd, argv[1],argv[2]);
+    }else{
+    // envoyer et recevoir les couleurs prédominantes
+    // d'une image au format BMP (argv[1])
+    envoie_couleurs(socketfd, argv[1],"");
+    } 
+  
+  }
+else{
+  puts("commande non reconnue");
+}
+
+  close(socketfd);
+  }
+
 
   return 0;
 }
 
 
-//on regarde si la commande demande le nom
-//   if ( strcmp( argv[1],"nom") == 0 ) 
-//   {
-//     //on regarde si le parametre json a ete active
-//     if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
-//   {
-//     envoie_json(socketfd,argv[1]);
-//   }else{
-//     envoie_nom_client(socketfd);
-//   }
-//   }
-//   else if (strcmp( argv[1], "calcule" ) ==0) 
-//   {  
-//     if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
-//   {
-//     envoie_json(socketfd,argv[1]);
-//   }else{
-//     envoie_operateur_numero(socketfd);
-//   }
-//   }
-//   else if ( strcmp( argv[1], "couleurs" ) ==0) 
-//   {
-//       if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
-//   {
-//     envoie_json(socketfd,argv[1]);
-//   }else{
-//     envoie_list_couleurs(socketfd);
-//   }
-//   }
-//   else if (strcmp( argv[1], "message")==0 )
-//   {
-//       if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
-//   {
-//     envoie_json(socketfd,argv[1]);
-//   }else{
-//     // envoyer et recevoir un message
-//     envoie_recois_message(socketfd);
-//   }
-//   }
-//     else if ( strcmp( argv[1], "balises")==0 )
-//   {
-//       if ((argc==3)&& strcmp( argv[2],"json") == 0 ) 
-//   {
-//     envoie_json(socketfd,argv[1]);
-//   }else{
-//     // envoyer et recevoir un message
-//     envoie_list_balises(socketfd);
-//   }
-    
-//   }
-//   else if ( strstr(argv[1],".bmp") != NULL)
-//   {
-//     if (argc == 3)
-//     {
-//           // envoyer et recevoir les couleurs prédominantes
-//     // d'une image au format BMP (argv[1])
-//     envoie_couleurs(socketfd, argv[1],argv[2]);
-//     }else{
-//     // envoyer et recevoir les couleurs prédominantes
-//     // d'une image au format BMP (argv[1])
-//     envoie_couleurs(socketfd, argv[1],"");
-//     } 
-  
-//   }
-// else{
-//   puts("commande non reconnue");
-// }
 
-//   close(socketfd);
-// }
