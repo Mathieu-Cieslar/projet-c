@@ -50,6 +50,10 @@ int renvoie_message(int client_socket_fd, char *data)
     printf("%s\n","JSON envoyé non valide");
     return 0;
   };
+  if (ValidationAvantEnvoieServeur(data) == 0){
+    printf("%s\n","JSON envoyé non valide");
+    return 0;
+  };
 
   int data_size = write(client_socket_fd, (void *)data, strlen(data));
 

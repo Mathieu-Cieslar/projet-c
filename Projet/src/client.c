@@ -125,6 +125,10 @@ char sortie[1024];
         printf("%s\n","JSON envoyé non valide");
         return 0;
       };
+      if (ValidationAvantEnvoieClient(sortie) == 0){
+        printf("%s\n","JSON envoyé non valide");
+        return 0;
+      };
 
   if (res < 0)
   {

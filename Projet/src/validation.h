@@ -23,5 +23,7 @@
  * Fonction d'envoi et de réception de messages
  */
 int validationJSON(char[1024]);
+int ValidationAvantEnvoieClient(char[1024]);
+int ValidationAvantEnvoieServeur(char[1024]);
 
 #endif
