@@ -33,8 +33,6 @@ void formaterMessage(const char *entree, char *sortie) {
     char *valeurs = NULL;
     size_t valeurs_len = 0;
 
-
-
     // On copie l'entrée pour la modification
     copy = strdup(entree);
 
@@ -55,8 +53,10 @@ void formaterMessage(const char *entree, char *sortie) {
         free(code);
         return;
     }
-    // On ajoute la première valeur (opérateur ou chiffre)
+
+    // On ajoute la première valeur 
     valeurs = realloc(valeurs, valeurs_len + strlen(token) + 3);
+    memset(valeurs,0,valeurs_len + strlen(token) + 3);
 
         
     if (valeurs == NULL) {
@@ -75,9 +75,6 @@ void formaterMessage(const char *entree, char *sortie) {
     }
 
     valeurs_len += strlen(token) + 2;
-
-   
-
 
     // On vérifie s'il y a d'autres valeurs séparées par des virgules ou des espaces
     while ((token = strtok(NULL, delims)) != NULL) {

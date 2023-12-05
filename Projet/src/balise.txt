@@ -1,5 +1,4 @@
-nbBalises enregistre 4
-eee
-eeee
-zzz
-aaa
+nbBalises enregistre 3
+iiiiiii
+ooooo
+pppppp

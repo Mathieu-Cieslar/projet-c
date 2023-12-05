@@ -284,7 +284,7 @@ strncpy(data,dataToFormat,strlen(dataToFormat)-1);
       
       // on format les valeur recu pour pouvoir les traiter
       formatStringForJson(result.valeurs);
-      //printf("data :  %s\n", result.valeurs);
+      
       // On effecture l operation et on renvoir le resutats
       double resultats = evalOp(result.valeurs);
 
@@ -303,6 +303,9 @@ strncpy(data,dataToFormat,strlen(dataToFormat)-1);
      
     } else if (strcmp(result.code, "couleurs") == 0) {
 
+     // char chaine[50];
+      //sprintf(chaine,"couleur%d.txt", client_socket_fd);
+
         //On traite la liste de couleurs sous le format json
           enregistrerCouleursDansFichier("couleur.txt",result.valeurs);
 
@@ -310,9 +313,9 @@ strcat(dataToFormat, "enregistré");
 strcat(dataToFormat, "\0");
 strncpy(data,dataToFormat,strlen(dataToFormat)-1);
 
+
 // on formate la sortie au format json
     formaterMessage(data, sortie);
-
 
     renvoie_message(client_socket_fd, sortie);
       // on traite les balise sous format json
@@ -469,14 +472,6 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
   return (EXIT_SUCCESS);
 }
 
-// Fonction de gestion du signal Ctrl+C
-void gestionnaire_ctrl_c(int signal)
-{
-  printf("\nSignal Ctrl+C capturé. Sortie du programme.\n");
-  // fermer le socket
-  close(socketfd);
-  exit(0); // Quitter proprement le programme.
-}
 
 int main() {
     int socketfd, bind_status;
