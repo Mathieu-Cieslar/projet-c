@@ -1,3 +1,5 @@
-nbCouleur enregistre 2
-ze
-ez
+nbCouleur enregistre 4
+azeaz
+eazeaze
+ezeze
+e

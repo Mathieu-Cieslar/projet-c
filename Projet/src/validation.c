@@ -229,7 +229,7 @@ int ValidationCalcule(char data[1024]){
         if(index == 0){
             regex_t regex;
             int reti;
-            const char *pattern = "[+-/*]";  // Expression régulière pour +, -, *, /
+            const char *pattern = "[minimum|maximum|ecart-type|moyenne|+|-|/|*]";  // Expression régulière pour +, -, *, /
 
             // Compilation de l'expression régulière
             reti = regcomp(&regex, pattern, REG_EXTENDED);
