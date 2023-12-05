@@ -11,3 +11,19 @@
  * valides, c'est-à-dire que les messages respectent le format JSON et
  * respectent le protocole spécifié par le côté serveur.
  */
+#ifndef __VALIDATION_H__
+#define __VALIDATION_H__
+
+/*
+ * port d'ordinateur pour envoyer et recevoir des messages
+ */
+#define PORT 8089
+
+/*
+ * Fonction d'envoi et de réception de messages
+ */
+int validationJSON(char[1024]);
+int ValidationAvantEnvoieClient(char[1024]);
+int ValidationAvantEnvoieServeur(char[1024]);
+
+#endif

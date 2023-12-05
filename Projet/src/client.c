@@ -12,6 +12,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <regex.h>
+#include "validation.h"
 
 #include "client.h"
 #include "bmp.h"
@@ -115,9 +117,18 @@ fgets(listB, sizeof(listB), stdin);
      else {
         printf("Choix non valide.\n");
     }
-char sortie[200];
+char sortie[1024];
 // on formate la sortie au format json
     formaterMessage(data, sortie);
+
+      if (validationJSON(sortie) == 0){
+        printf("%s\n","JSON envoyé non valide");
+        return 0;
+      };
+      if (ValidationAvantEnvoieClient(sortie) == 0){
+        printf("%s\n","JSON envoyé non valide");
+        return 0;
+      };
 
   if (res < 0)
   {
@@ -142,6 +153,10 @@ char sortie[200];
     perror("erreur lecture");
     return -1;
   }
+  if (validationJSON(data) == 0){
+    printf("%s\n","JSON reçu non valide");
+    return 0;
+  };
   printf("%s \n",data);
   TableauDeChaines result = extraireCodeEtValeurs(data);
    char resultToFormat[1024];

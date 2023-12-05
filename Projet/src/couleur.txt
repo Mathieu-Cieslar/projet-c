@@ -1,5 +1,3 @@
-nbCouleur enregistre 4
-ttt
-ooo
-uuu
-ttt
+nbCouleur enregistre 2
+ze
+ez
