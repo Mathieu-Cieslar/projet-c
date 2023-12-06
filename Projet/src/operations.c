@@ -6,7 +6,7 @@
  *
  */
 
-/* 
+/*
  * Code pour traiter différents types d'opérations mathématiques
  */
 #include <string.h>
@@ -21,23 +21,30 @@
 #include <math.h>
 #include "operations.h"
 
-float calculerMoyenne(char *tableau[], int taille) {
+// Fonction pour calculer une moyenne
+float calculerMoyenne(char *tableau[], int taille)
+{
     float somme = 0.0;
 
-    for (int i = 0; i < taille; i++) {
-    
+    for (int i = 0; i < taille; i++)
+    {
+
         somme += atof(tableau[i]);
     }
     // Retourne la moyenne
     return taille > 0 ? somme / taille : 0.0;
 }
 
-float trouverMinimum(char *tableau[], int taille) {
+// Fonction pour trouver le minimum
+float trouverMinimum(char *tableau[], int taille)
+{
     float minimum = DBL_MAX;
 
-    for (int i = 0; i < taille; i++) {
+    for (int i = 0; i < taille; i++)
+    {
         float valeur = atof(tableau[i]);
-        if (valeur < minimum) {
+        if (valeur < minimum)
+        {
             minimum = valeur;
         }
     }
@@ -45,12 +52,16 @@ float trouverMinimum(char *tableau[], int taille) {
     return minimum;
 }
 
-float trouverMaximum(char *tableau[], int taille) {
+// Fonction pour trouver le maximum
+float trouverMaximum(char *tableau[], int taille)
+{
     float maximum = -DBL_MAX;
 
-    for (int i = 0; i < taille; i++) {
+    for (int i = 0; i < taille; i++)
+    {
         float valeur = atof(tableau[i]);
-        if (valeur > maximum) {
+        if (valeur > maximum)
+        {
             maximum = valeur;
         }
     }
@@ -58,11 +69,14 @@ float trouverMaximum(char *tableau[], int taille) {
     return maximum;
 }
 
-float calculerEcartType(char *tableau[], int taille) {
+// Fonction pour calculer l ecart type
+float calculerEcartType(char *tableau[], int taille)
+{
     float somme = 0.0;
     float sommeCarres = 0.0;
 
-    for (int i = 0; i < taille; i++) {
+    for (int i = 0; i < taille; i++)
+    {
         float valeur = atof(tableau[i]);
         somme += valeur;
         sommeCarres += valeur * valeur;

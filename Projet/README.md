@@ -15,6 +15,8 @@
 * Pour moi la principale difficultés a été le manque de temps ainsi que la partie multi-clients serveur 
 
 # Commentaires
+* Le code contient toutes les parties de la 1 à la 5, toutes les fonctionnalités ont été gardée ainsi on peut envoyer des message simple, envoyer message json et avoir un fonctionnement multi client (uniquement en message json)
+
 * Comment utiliser notre programme :
 * Serveur
 Tout d'abord lancer programme `./serveur` celui ci ne prend aucun parametre.
@@ -33,7 +35,7 @@ Voici les differntes commandes que vous pouvez lancer :
 - `./client couleurs`
 - `./client balises`
 
-Ses commandes sont fait pour passer des messages simples entre le client et le serveur.
+Ces commandes sont fait pour passer des messages simples entre le client et le serveur.
 
 La commande `./client couleurs` va demander la liste des couleurs a l'utilisateur, puis les enregistrer dans un fichier couleur.txt et ensuite constuire le graphique grace a ces couleurs.
 
@@ -43,7 +45,8 @@ On peut egalement envoyer un fichier bmp qui agira une liste de couleur.
 On peut specifier le nombre max de couleur en ajoutant un parametre a la fin :
 - `./client images.bmp 5`
 
-* En JSON 
+# En JSON 
+
 On peut egalement envoyer ces messages au serveur en json en ajoutant un parametre json a la fin de chaque commande : 
 - `./client nom json`
 - `./client message json`
