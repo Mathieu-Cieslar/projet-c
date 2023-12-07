@@ -538,18 +538,20 @@ void gestionnaire_ctrl_c(int signal)
 
 int main(int argc, char **argv)
 {
+  // On regarde si l'on veut lancer les tests 
   if (argc > 1)
   {
+    // Si l argument testes est passé, on lance les tests
     if (argc == 2 && strcmp(argv[1], "testes") == 0)
     {
       testes_unitaire();
       return 0;
-    }
+    }// Si il y a d'autre arguments on sort du programme 
     else
     {
       return 0;
     }
-  }
+  }// Le serveur est lancé en fonctionnement normal
   else
   {
     int bind_status;
@@ -625,7 +627,7 @@ int main(int argc, char **argv)
         }
       }
 
-      // On parcour tous les clients existants pour lire et répondre
+      // On parcours tous les clients existants pour lire et répondre
       for (int i = 0; i < MAX_CLIENTS; ++i)
       {
         if (client_socket_fds[i] > 0 && FD_ISSET(client_socket_fds[i], &read_fds))

@@ -10,15 +10,17 @@
   <unistd.h>
   <sys/select.h>
  <stdbool.h>
+ <regex.h>
 
 # Difficulté
-* Pour moi la principale difficultés a été le manque de temps ainsi que la partie multi-clients serveur avec les tests car nous n'avons pas bien compris ce qui était demandé notemment quel partie il fallait tester car les fonction ne pour traitre les message ne retournait rien et ecrivait juste dans la socket 
+* Pour nous la principale difficultés a été le manque de temps ainsi que la partie multi-clients serveur avec les tests car nous n'avons pas bien compris ce qui était demandé notemment quel partie il fallait tester car les fonction pour traiter les messages ne retournaient rien et ecrivaient juste dans la socket 
 
 # Commentaires
 * Le code contient toutes les parties de la 1 à la 5, toutes les fonctionnalités ont été gardée ainsi on peut envoyer des message simple, envoyer message json et avoir un fonctionnement multi client (uniquement en message json)
 
 * Comment utiliser notre programme :
-* Serveur
+###  Serveur
+
 Tout d'abord lancer programme `./serveur` celui ci ne prend aucun parametre.
 
 Ensuite il faut lancer un client.
@@ -27,7 +29,8 @@ Ensuite il faut lancer un client.
 
 * Client
 Pour lancer un client il suffite de taper `./client nom`
-* Attention le client prend toujours au moins un argument !
+* Attention dans cette partie le client prend toujours au moins un argument !
+
 Voici les differntes commandes que vous pouvez lancer : 
 - `./client nom`
 - `./client message`
@@ -35,7 +38,7 @@ Voici les differntes commandes que vous pouvez lancer :
 - `./client couleurs`
 - `./client balises`
 
-Ces commandes sont fait pour passer des messages simples entre le client et le serveur.
+Ces commandes sont fait pour passer des messages simples entre le client et le serveur (sans JSON).
 
 
 # En JSON 
@@ -47,17 +50,19 @@ On peut egalement envoyer ces messages au serveur en json en ajoutant un paramet
 - `./client couleurs json`
 - `./client balises json`
 
+#### Tout les messages json sont validés grâce aux fonctions dans le fichier validation.c
+
 ## Les commandes en details
 
 La commande `./client calcule json`  va demander un calcul à l'utilisateur, celui-ci devra soit saisir un calcule simple avec un operateur (+-/*) et 2 nombre séparé par des espaces : `+ 5 2`  soit saisir une fonction avec une liste infini de nombre exemple : `moyenne 5 8 9 56 4 2 3 7` .
 
 La commande `./client message json`  va demander un message à l'utilisateur, celui-ci devra saisir un message par exemple : `test` .
 
-La commande `./client couleurs json` va demander la liste des couleurs a l'utilisateur, celui-ci devra saisir une liste de la forme `3,#ehhhh,#chheee,#fhhhhh`, elles seront enregistrer dans un fichier couleur.txt.
+La commande `./client couleurs json` va demander la liste des couleurs a l'utilisateur, celui-ci devra saisir une liste de la forme (nbCouleurs,couleur1,couleur2,...) `3,#ehhhh,#chheee,#fhhhhh`, elles seront enregistrer dans un fichier couleur.txt.
 
-La commande `./client balises json` va demander la liste des balises a l'utilisateur, celui-ci devra saisir une liste de la forme `3,#arbre,#chat,#chien`, elles seront enregistrer dans un fichier balises.txt .
+La commande `./client balises json` va demander la liste des balises a l'utilisateur, celui-ci devra saisir une liste de la forme (nbBalises,balise1,balise2,...)`3,#arbre,#chat,#chien`, elles seront enregistrer dans un fichier balises.txt .
 
-On peut egalement envoyer un fichier bmp qui agira une liste de couleur.
+On peut egalement envoyer un fichier bmp qui agira comme une liste de couleur.
 On peut specifier le nombre max de couleur en ajoutant un parametre a la fin :
 - `./client images.bmp 5`
 
@@ -78,8 +83,14 @@ Durant cette commande tous les message sont envoyés et réceptionné en JSON pu
 
 ### Test 
 
-Nous avons testé les fonction de calcul et les fonction attrayant au JSON (verfication de la conformité et encodage)
+Nous avons testé les fonctions de calcul et les fonctions attrayant au JSON (verfication de la conformité et encodage)
+
+### Test en Detail
+
+- 4 tests pour les fonction de calculs 
+- 4 test validation JSON
+- 1 test encodage JSON
 
 Pour lancer les tests il suffit de lancer la commande :
-`./client testes`
+`./serveur testes`
 

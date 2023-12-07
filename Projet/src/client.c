@@ -131,14 +131,16 @@ int envoie_json(int socketfd, char *code)
   // on formate la sortie au format json
   formaterMessage(data, sortie);
 
-      if (validationJSON(sortie) == 0){
-        printf("%s\n","JSON envoyé non valide");
-        return 0;
-      };
-      if (ValidationAvantEnvoieClient(sortie) == 0){
-        printf("%s\n","JSON envoyé non valide");
-        return 0;
-      };
+  if (validationJSON(sortie) == 0)
+  {
+    printf("%s\n", "JSON envoyé non valide");
+    return 0;
+  };
+  if (ValidationAvantEnvoieClient(sortie) == 0)
+  {
+    printf("%s\n", "JSON envoyé non valide");
+    return 0;
+  };
 
   if (res < 0)
   {
@@ -163,8 +165,9 @@ int envoie_json(int socketfd, char *code)
     perror("erreur lecture");
     return -1;
   }
-  if (validationJSON(data) == 0){
-    printf("%s\n","JSON reçu non valide");
+  if (validationJSON(data) == 0)
+  {
+    printf("%s\n", "JSON reçu non valide");
     return 0;
   };
 
