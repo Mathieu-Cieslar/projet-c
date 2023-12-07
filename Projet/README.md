@@ -64,6 +64,8 @@ On peut specifier le nombre max de couleur en ajoutant un parametre a la fin :
 
 # Partie 5
 
+### Multi-clients
+
 Dans la partie 5 le multi client a été introduit et donc pour lancer le client il faut entrer la commande : 
 - `./client`
 
@@ -73,4 +75,11 @@ Une fois le client lancé l'utilisateur à doit saisir une action et rentrer les
 
 Durant cette commande tous les message sont envoyés et réceptionné en JSON puis décodé pour être affiché a l'utilisateur.
 
+
+### Test 
+
+Nous avons testé les fonction de calcul et les fonction attrayant au JSON (verfication de la conformité et encodage)
+
+Pour lancer les tests il suffit de lancer la commande :
+`./client testes`
 
