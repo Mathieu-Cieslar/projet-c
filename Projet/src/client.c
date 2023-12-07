@@ -472,9 +472,6 @@ int main(int argc, char **argv)
   }
     
   }
-  else if ( strcmp( argv[1], "testes")==0 ){
-    testes_unitaire();
-  }
   else if ( strstr(argv[1],".bmp") != NULL)
   {
     if (argc == 3)

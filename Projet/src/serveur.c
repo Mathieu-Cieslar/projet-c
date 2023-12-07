@@ -20,6 +20,7 @@
 #include "validation.h"
 #include "json.h"
 #include "operations.h"
+#include "testes.h"
 int socketfd;
 
 int visualize_plot()
@@ -492,76 +493,86 @@ void gestionnaire_ctrl_c(int signal)
   exit(0); // Quitter proprement le programme.
 }
 
-int main()
+int main(int argc, char **argv)
 {
-  int bind_status;
-
-  struct sockaddr_in server_addr;
-
-  /*
-   * Creation d'une socket
-   */
-  socketfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (socketfd < 0)
+  if (argc > 1)
   {
-    perror("Unable to open a socket");
-    return -1;
-  }
+    if (argc ==2 && strcmp( argv[1], "testes")==0 ){
+      testes_unitaire();
+      return 0;
+    }else{
+      return 0;
+    }
+  }else{
+    int bind_status;
 
-  int option = 1;
-  setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+    struct sockaddr_in server_addr;
 
-  // détails du serveur (adresse et port)
-  memset(&server_addr, 0, sizeof(server_addr));
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(PORT);
-  server_addr.sin_addr.s_addr = INADDR_ANY;
-
-  // Relier l'adresse à la socket
-  bind_status = bind(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
-  if (bind_status < 0)
-  {
-    perror("bind");
-    return (EXIT_FAILURE);
-  }
-
-  // Enregistrez la fonction de gestion du signal Ctrl+C
-  signal(SIGINT, gestionnaire_ctrl_c);
-
-  // Écouter les messages envoyés par le client en boucle infinie
-  while (1)
-  {
-    // Écouter les messages envoyés par le client
-    listen(socketfd, 10);
-
-    // Lire et répondre au client
-    struct sockaddr_in client_addr;
-    char data[1024];
-
-    unsigned int client_addr_len = sizeof(client_addr);
-
-    // nouvelle connection de client
-    int client_socket_fd = accept(socketfd, (struct sockaddr *)&client_addr, &client_addr_len);
-    if (client_socket_fd < 0)
+    /*
+    * Creation d'une socket
+    */
+    socketfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (socketfd < 0)
     {
-      perror("accept");
+      perror("Unable to open a socket");
+      return -1;
+    }
+
+    int option = 1;
+    setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+
+    // détails du serveur (adresse et port)
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+
+    // Relier l'adresse à la socket
+    bind_status = bind(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    if (bind_status < 0)
+    {
+      perror("bind");
       return (EXIT_FAILURE);
     }
 
-    // la réinitialisation de l'ensemble des données
-    memset(data, 0, sizeof(data));
+    // Enregistrez la fonction de gestion du signal Ctrl+C
+    signal(SIGINT, gestionnaire_ctrl_c);
 
-    // lecture de données envoyées par un client
-    int data_size = read(client_socket_fd, (void *)data, sizeof(data));
-
-    if (data_size < 0)
+    // Écouter les messages envoyés par le client en boucle infinie
+    while (1)
     {
-      perror("erreur lecture");
-      return (EXIT_FAILURE);
+      // Écouter les messages envoyés par le client
+      listen(socketfd, 10);
+
+      // Lire et répondre au client
+      struct sockaddr_in client_addr;
+      char data[1024];
+
+      unsigned int client_addr_len = sizeof(client_addr);
+
+      // nouvelle connection de client
+      int client_socket_fd = accept(socketfd, (struct sockaddr *)&client_addr, &client_addr_len);
+      if (client_socket_fd < 0)
+      {
+        perror("accept");
+        return (EXIT_FAILURE);
+      }
+
+      // la réinitialisation de l'ensemble des données
+      memset(data, 0, sizeof(data));
+
+      // lecture de données envoyées par un client
+      int data_size = read(client_socket_fd, (void *)data, sizeof(data));
+
+      if (data_size < 0)
+      {
+        perror("erreur lecture");
+        return (EXIT_FAILURE);
+      }
+
+      recois_envoie_message(client_socket_fd, data);
     }
 
-    recois_envoie_message(client_socket_fd, data);
+    return 0;
   }
-
-  return 0;
 }
