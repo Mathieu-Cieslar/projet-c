@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include "serveur.h"
 #include "validation.h"
@@ -44,17 +45,18 @@ int visualize_plot()
 
 /* renvoyer un message (*data) au client (client_socket_fd)
  */
-int renvoie_message(int client_socket_fd, char *data)
+int renvoie_message(int client_socket_fd, char *data, bool isJson)
 {
-
-  if (validationJSON(data) == 0){
-    printf("%s\n","JSON envoyé non valide");
-    return 0;
-  };
-  if (ValidationAvantEnvoieServeur(data) == 0){
-    printf("%s\n","JSON envoyé non valide");
-    return 0;
-  };
+  if(isJson){
+    if (validationJSON(data) == 0){
+      printf("%s\n","JSON envoyé non valide");
+      return 0;
+    };
+    if (ValidationAvantEnvoieServeur(data) == 0){
+      printf("%s\n","JSON envoyé non valide");
+      return 0;
+    };
+  }
 
   int data_size = write(client_socket_fd, (void *)data, strlen(data));
 
@@ -273,7 +275,7 @@ strncpy(data,dataToFormat,strlen(dataToFormat)-1);
 // on formate la sortie au format json
     formaterMessage(data, sortie);
 
-      renvoie_message(client_socket_fd,sortie);
+      renvoie_message(client_socket_fd,sortie,true);
         
         //On renvoie le nom apres avoir decoder le json
     } else if (strcmp(result.code, "nom") == 0) {
@@ -285,7 +287,7 @@ strncpy(data,dataToFormat,strlen(dataToFormat)-1);
 
 // on formate la sortie au format json
     formaterMessage(data, sortie);
-     renvoie_message(client_socket_fd,sortie);
+     renvoie_message(client_socket_fd,sortie,true);
 
     }else if (strcmp(result.code, "calcule") == 0) {
 
@@ -307,7 +309,7 @@ strncpy(data,dataToFormat,strlen(dataToFormat)-1);
     formaterMessage(data, sortie);
           
       //printf("Resultat :  %f\n", resultats);
-      renvoie_message(client_socket_fd, sortie);
+      renvoie_message(client_socket_fd, sortie,true);
      
     } else if (strcmp(result.code, "couleurs") == 0) {
 
@@ -322,7 +324,7 @@ strncpy(data,dataToFormat,strlen(dataToFormat)-1);
     formaterMessage(data, sortie);
 
 
-    renvoie_message(client_socket_fd, sortie);
+    renvoie_message(client_socket_fd, sortie,true);
       // on traite les balise sous format json
 
     }else if (strcmp(result.code, "balises") == 0) {
@@ -334,7 +336,7 @@ strncpy(data,dataToFormat,strlen(dataToFormat)-1);
 // on formate la sortie au format json
     formaterMessage(data, sortie);
   
-    renvoie_message(client_socket_fd, sortie);
+    renvoie_message(client_socket_fd, sortie,true);
     }
      else {
         printf("Choix non valide.\n");
@@ -431,7 +433,7 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
   { // On affiche le message
     printf("Message recu: %s\n", data);
     //On renvoie le message au client
-    renvoie_message(client_socket_fd, data);
+    renvoie_message(client_socket_fd, data,false);
   }
   // on regarde si on recoit un calcul
   if (strcmp(code, "calcule:") == 0)
@@ -445,24 +447,24 @@ int recois_envoie_message(int client_socket_fd, char data[1024])
     //on affiche le resultat du calcul
     snprintf(chaine,50, "%f", result);
     // on retourne le resultat au client
-    renvoie_message(client_socket_fd, chaine);
+    renvoie_message(client_socket_fd, chaine,false);
   } // on regarde si on recoit le code nom
   if (strcmp(code, "nom:") == 0)
   {
     printf("%s\n", data);
-    renvoie_message(client_socket_fd, data);
+    renvoie_message(client_socket_fd, data,false);
   }// on regarde si on recoit le code couleurs
   if(strcmp(code, "couleurs:") == 0)
   {
     printf("Couleur recu: %s\n", data);
     enregistrerCouleursDansFichier("couleur.txt",data);
-    renvoie_message(client_socket_fd, "Couleur Sauvegardé");
+    renvoie_message(client_socket_fd, "Couleur Sauvegardé",false);
   }// On regarde si on recoit le code balise
   if(strcmp(code, "balises:") == 0)
   {
     printf("Balises recu: %s\n", data);
     enregistrerBalisesDansFichier("balise.txt",data);
-    renvoie_message(client_socket_fd, "Balise Sauvegardé");
+    renvoie_message(client_socket_fd, "Balise Sauvegardé",false);
   }
   //On regarde si le code est couleurs pour afficher l image
   if(strcmp(code, "couleurs:") == 1)

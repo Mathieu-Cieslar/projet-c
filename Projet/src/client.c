@@ -18,6 +18,7 @@
 #include "client.h"
 #include "bmp.h"
 #include "json.h"
+#include "testes.h"
 
 /*
  * Fonction d'envoi et de réception de messages
@@ -470,6 +471,9 @@ int main(int argc, char **argv)
     envoie_list_balises(socketfd);
   }
     
+  }
+  else if ( strcmp( argv[1], "testes")==0 ){
+    testes_unitaire();
   }
   else if ( strstr(argv[1],".bmp") != NULL)
   {
