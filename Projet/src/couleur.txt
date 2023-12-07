@@ -1,5 +1,5 @@
 nbCouleur enregistre 4
-rrrrrrr
-yyyyyyy
-iiiiii
-pppppp
+#hffff
+#eeeef
+#zzzzz
+#iiiij

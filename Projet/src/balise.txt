@@ -1,4 +1,4 @@
 nbBalises enregistre 3
-iiiiiii
-ooooo
-pppppp
+#chat
+#chien
+#arbre
